@@ -99,6 +99,7 @@ Cross-skill design guidance lives in [`references/`](references) (referenced by 
 - [`design-system.md`](references/design-system.md) — one visual language (color by role, edge conventions, contrast/typography floors) across Mermaid, Excalidraw, and Canvas
 - [`layout-algorithms.md`](references/layout-algorithms.md) — deterministic layouts; layered-by-dependency-depth is the architecture default
 - [`mermaid-syntax.md`](references/mermaid-syntax.md) — error-prevention rules so generated Mermaid always renders
+- [`vault-resolution.md`](references/vault-resolution.md) — how every skill resolves the vault path (explicit arg > `ATLAS_VAULT` > recorded in memory > ask); `map-project` records it on first run, the rest recall it
 
 Excalidraw canvases are **hand-authored** to these specs (no converter, no dependencies): `layout-algorithms.md` covers exact positioning per diagram type (graph/flowchart, sequence, class, mindmap), and `write-excalidraw/reference/excalidraw-format.md` covers the element schemas + mandatory binding rules.
 

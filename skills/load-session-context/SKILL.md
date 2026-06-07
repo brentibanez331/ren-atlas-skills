@@ -9,7 +9,7 @@ Emit a token-thrifty architecture briefing from an existing atlas vault. Stage 5
 
 ## Inputs
 
-- **Vault** — `ATLAS_VAULT` or argument. Read `<vault>/Architecture/.atlas/summaries.json` (produced by `write-excalidraw`/`refresh-vault`). If it's missing, fall back to reading the per-project notes' frontmatter + "Talks to"/"Used by" sections; if there's no vault at all, tell the user to run the build pipeline first.
+- **Vault** — resolve per [vault-resolution](../../references/vault-resolution.md) (explicit arg > `ATLAS_VAULT` > recorded in memory > ask). Read `<vault>/Architecture/.atlas/summaries.json` (produced by `write-excalidraw`/`refresh-vault`). If it's missing, fall back to reading the per-project notes' frontmatter + "Talks to"/"Used by" sections; if there's no vault at all, tell the user to run the build pipeline first.
 - **Scope** (optional but encouraged) — a working directory or a project id. Default scope is the current working directory.
 
 ## Scoping (the whole point — don't dump everything)

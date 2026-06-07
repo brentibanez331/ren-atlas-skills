@@ -10,7 +10,7 @@ Persist the atlas into an Obsidian vault as linked notes with embedded Mermaid, 
 ## Inputs
 
 - `manifest.json`, `graph.json`, and `diagrams/*.mmd` under `.atlas/`.
-- **Vault path** — `ATLAS_VAULT` or an argument. Required here (this is where everything lands). If artifacts are currently in a cwd `./.atlas/`, move them to `<vault>/Architecture/.atlas/`.
+- **Vault path** — resolve per [vault-resolution](../../references/vault-resolution.md) (explicit arg > `ATLAS_VAULT` > recorded in memory > ask). Required here (this is where everything lands). If artifacts are currently in a cwd `./.atlas/`, move them to `<vault>/Architecture/.atlas/`.
 
 ## Read these first (the strict specs)
 

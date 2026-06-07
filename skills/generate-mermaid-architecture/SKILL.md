@@ -9,7 +9,7 @@ Render the connection graph as **readable** Mermaid at several zoom levels. Stag
 
 ## Inputs
 
-- `graph.json` (from detect-connections) and the `manifest.json` it references. Find them under `.atlas/`; ask if missing.
+- `graph.json` (from detect-connections) and the `manifest.json` it references. Resolve the vault per [vault-resolution](../../references/vault-resolution.md) (explicit arg > `ATLAS_VAULT` > recorded in memory > ask) and find them under `<vault>/Architecture/.atlas/` (or a cwd `./.atlas/`); ask if missing.
 
 ## Read these first
 

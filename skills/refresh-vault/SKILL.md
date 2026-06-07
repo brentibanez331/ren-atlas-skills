@@ -9,7 +9,7 @@ Incrementally update an existing atlas vault from current code. Stage 6 — what
 
 ## Inputs
 
-- **Vault** — `ATLAS_VAULT` or argument. Must already contain `Architecture/.atlas/` with `manifest.json`, `graph.json`, and `state.json` (if `state.json` is absent, treat this as a first run: do a full generate and create it).
+- **Vault** — resolve per [vault-resolution](../../references/vault-resolution.md) (explicit arg > `ATLAS_VAULT` > recorded in memory > ask). Must already contain `Architecture/.atlas/` with `manifest.json`, `graph.json`, and `state.json` (if `state.json` is absent, treat this as a first run: do a full generate and create it).
 - The repos/roots the manifest covers (their `root` paths are in the manifest).
 
 ## State file — `<vault>/Architecture/.atlas/state.json`

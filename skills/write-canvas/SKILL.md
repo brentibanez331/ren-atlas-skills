@@ -12,7 +12,7 @@ A sibling of `write-excalidraw`. Both read the same inputs; pick Canvas for a cl
 ## Inputs
 
 - `manifest.json` and `graph.json` under `.atlas/` (from map-project / detect-connections). Ask if missing.
-- **Vault path** — `ATLAS_VAULT` or argument. Required.
+- **Vault path** — resolve per [vault-resolution](../../references/vault-resolution.md) (explicit arg > `ATLAS_VAULT` > recorded in memory > ask). Required.
 - Project notes (`Architecture/<id>.md`) if they exist — produced by `write-excalidraw`. If present, nodes link to them; if absent, the skill degrades gracefully (see below) and still works standalone.
 
 ## Read these first

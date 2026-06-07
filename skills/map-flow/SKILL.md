@@ -18,7 +18,7 @@ Trace one capability end-to-end across files and project boundaries, and persist
 
 - **A capability/feature** — e.g. "Checkout KYC", "magic-link login", "payout settlement".
 - **Spans** (optional) — the projects/dirs it crosses (`libs/ng/.../kyc`, `services/api/service/external/onboarding`). If omitted, discover them by grepping the capability keywords across the manifest's project roots.
-- **Vault** — `ATLAS_VAULT` or argument.
+- **Vault** — resolve per [vault-resolution](../../references/vault-resolution.md) (explicit arg > `ATLAS_VAULT` > recorded in memory > ask).
 - **manifest.json / graph.json** (optional, under `.atlas/`) — if present, use them to map participants to project `id`s (for correct `[[wikilinks]]`) and to anchor known edges. `map-flow` works without them by inferring from paths.
 
 ## Procedure

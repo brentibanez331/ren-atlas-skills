@@ -9,7 +9,7 @@ Turn a `manifest.json` into a directed connection `graph.json`. Stage 2 of the a
 
 ## Inputs
 
-- `manifest.json` (from map-project). Locate it at `<vault>/Architecture/.atlas/manifest.json` or `./.atlas/manifest.json`; ask if neither exists.
+- `manifest.json` (from map-project). Resolve the vault per [vault-resolution](../../references/vault-resolution.md) (explicit arg > `ATLAS_VAULT` > recorded in memory > ask), then read `<vault>/Architecture/.atlas/manifest.json`; also check `./.atlas/manifest.json`. Ask if neither exists.
 
 ## Build a resolution index first
 

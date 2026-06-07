@@ -12,7 +12,7 @@ Build a `manifest.json` inventory of every project under one or more locations. 
 - **Scan target** — either:
   - a single root path (a monorepo, or a plain repo), **or**
   - an explicit list of paths, each treated as its own project root (separate repos).
-- **Vault path** (optional) — resolve it in this precedence: (1) an explicit argument, (2) the `ATLAS_VAULT` env var, (3) **a vault you previously recorded in your memory** (see "Remember the vault"), (4) otherwise ask, or fall back to a cwd `.atlas/`. Determines where the manifest is written (see "Output location").
+- **Vault path** (optional) — resolve per [vault-resolution](../../references/vault-resolution.md) (explicit arg > `ATLAS_VAULT` > recorded in memory > ask, or fall back to a cwd `.atlas/`). map-project is the skill that *records* it — see "Remember the vault". Determines where the manifest is written (see "Output location").
 
 Ask for the scan target if not given. Do **not** assume the current monorepo unless the user points at it.
 
