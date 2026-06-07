@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ren/ren-atlas-skills/schemas/graph.schema.json",
+  "title": "Atlas Connection Graph",
+  "description": "Directed graph of how projects connect, produced by detect-connections from a manifest.",
+  "type": "object",
+  "required": ["version", "manifestRef", "nodes", "edges"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": "1" },
+    "generatedAt": { "type": "string", "description": "ISO-8601 timestamp." },
+    "manifestRef": {
+      "type": "string",
+      "description": "Path (relative to this file) to the manifest.json this graph was built from."
+    },
+    "nodes": {
+      "type": "array",
+      "description": "One node per manifest project, plus one per discovered external system.",
+      "items": {
+        "type": "object",
+        "required": ["id", "type"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "description": "For projects, the manifest project id. For externals, 'external:<slug>' (e.g. 'external:stripe')." },
+          "type": { "enum": ["project", "external"] },
+          "label": { "type": "string" },
+          "externalKind": {
+            "enum": ["saas", "database", "cache", "broker", "storage", "auth", "unknown"],
+            "description": "Only for type=external."
+          }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/edge" }
+    }
+  },
+  "$defs": {
+    "edge": {
+      "type": "object",
+      "required": ["from", "to", "protocol", "sync"],
+      "additionalProperties": false,
+      "properties": {
+        "from": { "type": "string", "description": "Source node id. For sync calls this is the caller; for async this is the producer." },
+        "to": { "type": "string", "description": "Target node id. For sync calls this is the callee; for async this is the consumer." },
+        "protocol": {
+          "enum": ["http", "grpc", "graphql", "websocket", "queue", "import", "env", "db", "rpc", "webhook"],
+          "description": "Transport/mechanism of the connection."
+        },
+        "sync": {
+          "enum": ["sync", "async"],
+          "description": "sync = request/response (http, grpc, graphql, import, db). async = fire-and-forget / event-driven (queue, webhook)."
+        },
+        "channel": {
+          "type": ["string", "null"],
+          "description": "The concrete conduit, when meaningful: route path, gRPC method, queue subject/topic, env-var name, or table name."
+        },
+        "label": { "type": "string", "description": "Short human label for diagrams (defaults to protocol if absent)." },
+        "confidence": {
+          "enum": ["high", "medium", "low"],
+          "description": "How sure the resolver is that this edge is real and points at the right target."
+        },
+        "evidence": {
+          "type": "array",
+          "description": "Where this edge was inferred from. Keep at least one entry so refresh-vault and humans can audit it.",
+          "items": {
+            "type": "object",
+            "required": ["file"],
+            "additionalProperties": false,
+            "properties": {
+              "file": { "type": "string", "description": "Absolute path to the source file." },
+              "line": { "type": "integer" },
+              "snippet": { "type": "string", "description": "Short quoted line showing the call/import/config." }
+            }
+          }
+        }
+      }
+    }
+  }
+}

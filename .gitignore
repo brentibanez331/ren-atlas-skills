@@ -1,0 +1,8 @@
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# Atlas runtime artifacts (generated into a vault, not part of the pack)
+.atlas/
