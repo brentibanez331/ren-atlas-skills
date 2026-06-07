@@ -60,6 +60,8 @@ For `.excalidraw.md` canvases: a generated/converted canvas is **owned and edite
 
 For `.canvas` files (from `write-canvas`): same idea via stable node/edge ids (node id = project id, edge id = `<from>__<to>__<protocol>`). Update labels/colors and add/remove nodes for changed edges, but **preserve the position of any node that already exists** (the user may have arranged it) and never touch nodes/edges whose ids aren't graph-derived (hand-added). Canvas JSON can't hold `atlas:generated` markers, so stable-id + position-respect *is* the preservation contract — see `write-canvas`.
 
+For **flows** (from `map-flow`): for each `.atlas/flows/<slug>.json`, recompute the `fingerprint` of its `sourceFiles`. If any changed, **flag that flow as stale** in the report (name the flow and which traced files moved) — do **not** auto-rewrite it; a flow trace is curated, and re-tracing is `map-flow`'s job when the user asks. Never edit or delete a flow note. A flow whose `sourceFiles` are unchanged is left untouched.
+
 ### 4. Refresh the caches and state
 
 - Rebuild affected entries in `summaries.json` (so `load-session-context` reflects reality).
@@ -67,7 +69,7 @@ For `.canvas` files (from `write-canvas`): same idea via stable node/edge ids (n
 
 ## Done criteria & report
 
-Report concisely: changed projects, blast-radius projects pulled in, notes/diagrams/canvases updated, and anything **skipped or flagged** (missing markers, removed projects, canvases that needed full regeneration). Surfacing skips is mandatory — silent omission would read as "everything's current" when it isn't.
+Report concisely: changed projects, blast-radius projects pulled in, notes/diagrams/canvases updated, **stale flows** (whose traced files changed), and anything **skipped or flagged** (missing markers, removed projects, canvases that needed full regeneration). Surfacing skips is mandatory — silent omission would read as "everything's current" when it isn't.
 
 ## Notes
 

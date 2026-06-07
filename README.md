@@ -1,6 +1,6 @@
 # ren-atlas-skills
 
-A portable pack of seven [Claude Code](https://docs.claude.com/en/docs/claude-code) skills that turn one-or-many codebases into a **living, Obsidian-based architecture atlas**.
+A portable pack of eight [Claude Code](https://docs.claude.com/en/docs/claude-code) skills that turn one-or-many codebases into a **living, Obsidian-based architecture atlas**.
 
 Point it at a single monorepo (Nx, Turborepo, pnpm workspaces, Lerna, Bazel) **or** a handful of separate repos. It discovers the projects, works out how they talk to each other, draws the system at multiple zoom levels, writes everything into an Obsidian vault as linked notes + Excalidraw canvases, and keeps it up to date as the code changes — while feeding compact, scope-aware context back into future Claude sessions.
 
@@ -13,9 +13,9 @@ map-project ─▶ detect-connections ─▶ generate-mermaid ─┤
                                          (recall)             (maintain)
 ```
 
-Each skill is useful on its own, but they chain through two shared JSON contracts (`manifest.json` and `graph.json`) so the whole pipeline composes cleanly. The two persistence skills are alternatives (or run both): `write-canvas` for a clickable native map, `write-excalidraw` for a free-form hand-drawn one.
+Each skill is useful on its own, but they chain through two shared JSON contracts (`manifest.json` and `graph.json`) so the whole pipeline composes cleanly. The two persistence skills are alternatives (or run both): `write-canvas` for a clickable native map, `write-excalidraw` for a free-form hand-drawn one. `map-flow` is orthogonal — a deep dive into a single capability, off to the side of the topology pipeline.
 
-## The seven skills
+## The eight skills
 
 | Skill | Stage | Reads | Writes |
 |-------|-------|-------|--------|
@@ -24,8 +24,11 @@ Each skill is useful on its own, but they chain through two shared JSON contract
 | [`generate-mermaid-architecture`](skills/generate-mermaid-architecture) | Visualize | `graph.json` + `manifest.json` | `diagrams/*.mmd` |
 | [`write-excalidraw`](skills/write-excalidraw) | Persist | manifest + graph + diagrams | vault notes + embedded Mermaid + `summaries.json` + `.excalidraw.md` (dagre-laid-out via a bundled converter; in-plugin conversion fallback) |
 | [`write-canvas`](skills/write-canvas) | Persist | manifest + graph (+ notes) | `.canvas` files with file-linked nodes |
+| [`map-flow`](skills/map-flow) | Deep-dive | a capability + the files/projects it spans | `flows/<slug>.md` (sequence/flow/class Mermaid + evidence) + `.atlas/flows/<slug>.json` |
 | [`load-session-context`](skills/load-session-context) | Recall | vault `summaries.json` | structured context text (stdout) |
-| [`refresh-vault`](skills/refresh-vault) | Maintain | vault + repos (git/mtime) | updated notes/diagrams/canvases + `state.json` |
+| [`refresh-vault`](skills/refresh-vault) | Maintain | vault + repos (git/mtime) | updated notes/diagrams/canvases + stale-flow flags + `state.json` |
+
+> **Two granularities.** The topology skills treat each project as one node (system-level map). `map-flow` goes *inside* projects to trace how one capability flows across files and boundaries — a separate file under `flows/`, linked back to the project notes, never poured into the system canvas.
 
 ## Layout-agnostic by design
 
@@ -43,11 +46,15 @@ Everything the pipeline produces is stored under a single `.atlas/` directory in
     ├── System.canvas             # native Obsidian Canvas: clickable, file-linked system map
     ├── System.excalidraw.md      # editable Excalidraw, dagre-laid-out by the bundled converter
     ├── <domain>.excalidraw.md    # optional per-domain canvases (same converter)
+    ├── flows/                    # map-flow deep dives (one capability each, linked back to the notes)
+    │   ├── _flows.md             # index of all flows
+    │   └── <slug>.md             # e.g. checkout.md — sequence/flow/class Mermaid + evidence
     └── .atlas/                   # machine artifacts (the pipeline's working state)
         ├── manifest.json         # output of map-project
         ├── graph.json            # output of detect-connections
         ├── diagrams/*.mmd        # output of generate-mermaid-architecture
         ├── summaries.json        # compact per-project context for load-session-context
+        ├── flows/<slug>.json     # map-flow trace state (sourceFiles + fingerprint) for staleness
         └── state.json            # last-generation commit/mtime for refresh-vault
 ```
 

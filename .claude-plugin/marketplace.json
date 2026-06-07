@@ -9,7 +9,7 @@
     {
       "name": "ren-atlas",
       "source": "./",
-      "description": "Seven skills: discover projects across monorepos or separate repos, detect cross-boundary connections, generate Mermaid + Excalidraw + native Obsidian Canvas, load scoped session context, and keep the vault fresh as code changes.",
+      "description": "Eight skills: discover projects across monorepos or separate repos, detect cross-boundary connections, generate Mermaid + Excalidraw + native Obsidian Canvas, deep-map how a capability flows across files/projects, load scoped session context, and keep the vault fresh as code changes.",
       "author": {
         "name": "brentibanez331"
       },
@@ -33,6 +33,7 @@
         "./skills/generate-mermaid-architecture",
         "./skills/write-excalidraw",
         "./skills/write-canvas",
+        "./skills/map-flow",
         "./skills/load-session-context",
         "./skills/refresh-vault"
       ]
