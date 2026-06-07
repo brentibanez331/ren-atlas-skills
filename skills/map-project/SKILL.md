@@ -1,6 +1,6 @@
 ---
 name: map-project
-description: Scans one or more codebase locations and produces a structured inventory (manifest.json) of every project, service, and package. Accepts a single root path (auto-detecting Nx, Turborepo, pnpm/yarn/npm workspaces, Lerna, Bazel, Go/Cargo workspaces) or an explicit list of paths to separate repos. Use when the user wants to map/inventory/catalog a codebase or monorepo, "figure out what projects exist", or to start building an architecture atlas. First skill in the atlas pipeline; its output feeds detect-connections.
+description: Scans one or more codebase locations and produces a structured inventory (manifest.json) of every project, service, and package. Accepts a single root path (auto-detecting Nx, Turborepo, pnpm/yarn/npm workspaces, Lerna, Bazel, Go/Cargo workspaces) or an explicit list of paths to separate repos. Use when the user wants to map/inventory/catalog a codebase or monorepo, "figure out what projects exist", or to start building an architecture atlas. First skill in the atlas pipeline; its output feeds detect-connections. On the initial run it records the chosen vault directory in your persistent memory so later sessions and the other atlas skills recall it without re-asking.
 ---
 
 # map-project
@@ -12,7 +12,7 @@ Build a `manifest.json` inventory of every project under one or more locations. 
 - **Scan target** — either:
   - a single root path (a monorepo, or a plain repo), **or**
   - an explicit list of paths, each treated as its own project root (separate repos).
-- **Vault path** (optional) — `ATLAS_VAULT` env var or an argument. Determines where the manifest is written (see "Output location").
+- **Vault path** (optional) — resolve it in this precedence: (1) an explicit argument, (2) the `ATLAS_VAULT` env var, (3) **a vault you previously recorded in your memory** (see "Remember the vault"), (4) otherwise ask, or fall back to a cwd `.atlas/`. Determines where the manifest is written (see "Output location").
 
 Ask for the scan target if not given. Do **not** assume the current monorepo unless the user points at it.
 
@@ -68,6 +68,14 @@ Assemble the object per the schema and write it (pretty-printed JSON) to the out
 
 - If a vault is known: `<vault>/Architecture/.atlas/manifest.json` (create the directory).
 - Otherwise: `./.atlas/manifest.json` in the current working directory. `write-excalidraw` will relocate it once a vault is chosen.
+
+## Remember the vault (first run)
+
+`map-project` is the entry point of the pack, so it owns recording where the atlas lives. **On the initial run** — when a vault directory is first established (you had no vault recorded in memory and `<vault>/Architecture/.atlas/` didn't exist yet) — **write the vault's absolute path to your persistent memory** so later sessions and the other atlas skills (`detect-connections`, `write-excalidraw`, `write-canvas`, `load-session-context`, `refresh-vault`, `map-flow`) can recall it without asking the user again.
+
+- Use whatever durable memory mechanism your harness provides; record it as a plain fact, e.g. `Atlas vault: <absolute path>` (one entry, updated in place — don't accumulate duplicates).
+- On later runs, the remembered vault is precedence (3) above: an explicit argument or `ATLAS_VAULT` still overrides it. If the user points at a **different** vault, update the recorded path rather than adding a second.
+- If you only wrote to a cwd `./.atlas/` (no vault chosen yet), don't record anything — there's no stable vault to remember until one is set.
 
 ## Done criteria & handoff
 
