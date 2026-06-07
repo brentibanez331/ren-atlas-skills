@@ -56,7 +56,7 @@ Everything outside those markers (the user's `## Notes`, decisions, anything the
 
 Regenerate affected `diagrams/*.mmd` (changed project's neighbor view, the system view if topology changed, affected domain views) by re-invoking the `generate-mermaid-architecture` logic for just those, then re-embed them via the `write-excalidraw` logic.
 
-For `.excalidraw.md` canvases: update in place using the stable element ids (`rect-<id>`, `arrow-<from>-<to>`). Add/remove/reposition only the changed elements; keep untouched elements (and any the user added by hand) intact. If element-level surgery isn't safe, regenerate the canvas but warn that manual canvas edits to affected nodes may be lost.
+For `.excalidraw.md` canvases: these are produced by the Obsidian plugin's Mermaid-to-Excalidraw conversion and then **owned/edited by the user** — do not rewrite them. Refresh only regenerates the source `diagrams/*.mmd` (and the Mermaid embedded in the notes); if a project's diagram changed, **flag the matching `.excalidraw.md` as stale** (note it in the report) so the user can re-convert when they want, rather than clobbering their edited drawing.
 
 For `.canvas` files (from `write-canvas`): same idea via stable node/edge ids (node id = project id, edge id = `<from>__<to>__<protocol>`). Update labels/colors and add/remove nodes for changed edges, but **preserve the position of any node that already exists** (the user may have arranged it) and never touch nodes/edges whose ids aren't graph-derived (hand-added). Canvas JSON can't hold `atlas:generated` markers, so stable-id + position-respect *is* the preservation contract — see `write-canvas`.
 

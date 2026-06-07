@@ -1,22 +1,20 @@
 ---
 name: write-excalidraw
-description: Writes the architecture atlas into an Obsidian vault. Creates an Architecture/ folder, generates one Markdown note per project (frontmatter, wikilinks to neighbors, embedded Mermaid neighbor diagram), a system map-of-content index, and editable .excalidraw.md canvases in the Obsidian-Excalidraw plugin's native format so they open without conversion. Use after generate-mermaid-architecture, or when the user wants their architecture written into Obsidian / as Excalidraw canvases. Emits generated-region markers and a summaries.json for the rest of the pipeline.
+description: Writes the architecture atlas into an Obsidian vault. Creates an Architecture/ folder, generates one Markdown note per project (frontmatter, wikilinks to neighbors, embedded Mermaid neighbor diagram), a system map-of-content index, and sets up editable Excalidraw canvases via the Obsidian-Excalidraw plugin's built-in Mermaid-to-Excalidraw conversion (no hand-placed coordinates). Use after generate-mermaid-architecture, or when the user wants their architecture written into Obsidian / as Excalidraw canvases. Emits generated-region markers and a summaries.json for the rest of the pipeline.
 ---
 
 # write-excalidraw
 
-Persist the atlas into an Obsidian vault as linked notes + native Excalidraw canvases. Stage 4 of the pipeline.
+Persist the atlas into an Obsidian vault as linked notes with embedded Mermaid, and set up editable Excalidraw canvases by converting that Mermaid with the plugin. Stage 4 of the pipeline. **Mermaid is the source of truth; the Excalidraw canvas is a conversion of it** — we never hand-place Excalidraw coordinates.
 
 ## Inputs
 
 - `manifest.json`, `graph.json`, and `diagrams/*.mmd` under `.atlas/`.
 - **Vault path** — `ATLAS_VAULT` or an argument. Required here (this is where everything lands). If artifacts are currently in a cwd `./.atlas/`, move them to `<vault>/Architecture/.atlas/`.
 
-## Read these first
+## Read this first
 
-- [`../../references/design-system.md`](../../references/design-system.md) — colors by role, contrast/typography floors, sync→dashed convention. Apply these to every box, label, and arrow.
-- [`../../references/layout-algorithms.md`](../../references/layout-algorithms.md) — the layered layout used to position the scene deterministically.
-- [`reference/excalidraw-format.md`](reference/excalidraw-format.md) — the `.excalidraw.md` envelope and element schema (read before writing any canvas).
+- [`reference/excalidraw-format.md`](reference/excalidraw-format.md) — **the conversion method**: how the Obsidian plugin turns our Mermaid into a laid-out, properly-bound Excalidraw drawing. (Layout, bindings, and styling are the converter's job now, not ours — so `layout-algorithms.md` and the hand-authoring schema are no longer part of this skill's normal path.)
 
 ## What to write
 
@@ -24,8 +22,8 @@ Persist the atlas into an Obsidian vault as linked notes + native Excalidraw can
 <vault>/Architecture/
 ├── _index.md                    # MOC: system Mermaid + links to every project + legend
 ├── <project-id>.md              # one per project
-├── System.excalidraw.md         # editable canvas of the whole system
-├── <domain>.excalidraw.md       # one per domain tag, if any
+├── System.excalidraw.md         # created by the plugin when the user converts the system Mermaid (see below)
+├── <domain>.excalidraw.md       # likewise, per domain tag, if wanted
 └── .atlas/
     ├── ... (manifest, graph, diagrams)
     └── summaries.json           # compact context cache for load-session-context
@@ -90,27 +88,18 @@ Write a compact array consumed by `load-session-context`, one entry per project:
 ```
 Keep `owns` short — it's a token-thrifty summary, not the whole note.
 
-## The Excalidraw canvases
+## The Excalidraw canvases — via Mermaid-to-Excalidraw conversion
 
-This is the format-correctness part. Read [`reference/excalidraw-format.md`](reference/excalidraw-format.md) before writing any `.excalidraw.md`, and use [`reference/blank.excalidraw.md`](reference/blank.excalidraw.md) as the envelope.
+**We do not write `.excalidraw.md` scene JSON.** The Obsidian-Excalidraw plugin bundles Excalidraw's `mermaid-to-excalidraw` converter, which runs dagre layout and produces correctly-positioned, properly-bound elements. That eliminates the overlap / labels-on-boxes / arrows-don't-follow-drag problems that hand-placed coordinates caused. See [`reference/excalidraw-format.md`](reference/excalidraw-format.md) for the full rationale.
 
-**Most reliable path (prefer this):** if the user already has the Obsidian-Excalidraw plugin installed, ask them to create one blank Excalidraw note in the vault and point you at it. Clone *that* file's exact envelope (frontmatter + banner + section structure + fence language) and only swap in your generated `elements`/`appState`/`files` JSON. This sidesteps any plugin-version drift in the wrapper.
+Your job is to make conversion frictionless, not to draw:
 
-**Otherwise:** copy `reference/blank.excalidraw.md` and replace the `## Drawing` JSON.
-
-### Building the scene JSON
-
-For a canvas, convert graph nodes/edges into Excalidraw elements:
-- **Node → one `rectangle` + exactly one `text`** label bound to it (`containerId` = rect id; rect lists the text in `boundElements`). Stable ids `rect-<id>` / `text-<id>`. **Never add a second text at a node** — that produces doubled titles.
-- **Edge → one `arrow`** with `startBinding`/`endBinding` referencing the two rectangles' ids — **and add this arrow's id to BOTH endpoint rectangles' `boundElements`** (reciprocal binding). This is mandatory: without the rectangle side, dragging a node leaves its arrows behind. So each rectangle's `boundElements` ends up listing its one text label plus every arrow touching it. Dashed `strokeStyle` for async edges. Stable id `arrow-<from>-<to>`. For an edge crossing more than one rank, add interior `points` so it bends around intermediate nodes rather than through them.
-- **Edge label → a `text` bound to the arrow** (`containerId` = arrow id; arrow lists it in `boundElements`), id `label-<from>-<to>`. This is the only correct way to label an edge — a free-floating text element at the midpoint lands on top of boxes. One short label per edge. See the arrow-label section in the format reference.
-- Each text element's `rawText` must also be listed under `## Text Elements` as `<rawText> ^<elementId>` (the plugin indexes text there).
-- After placing everything, run the **label-aware collision pass** from the layout reference: if any edge label overlaps a node, the spacing is too tight or the label too long — widen `COL_GAP`/`ROW_GAP` or abbreviate, then re-check before writing.
-
-**Layout:** use the layered algorithm and spacing constants from [`layout-algorithms.md`](../../references/layout-algorithms.md) (sources left → stores right, barycenter ordering within ranks). Deterministic coordinates only — do not randomize positions, and on refresh keep existing element positions.
-
-See `reference/excalidraw-format.md` for the exact element field list and a worked minimal example.
+1. **Ensure the Mermaid exists.** Confirm `diagrams/system.mmd`, `diagrams/domain.<tag>.mmd`, and the per-project `diagrams/project.<id>.mmd` are present (from `generate-mermaid-architecture`). These already carry the design-system colors via `classDef`.
+2. **Embed it where it's convertible.** The per-project note embeds its neighbor Mermaid; `_index.md` embeds the system Mermaid (you already do both). That rendered Mermaid is the paste source.
+3. **Document the one-time conversion.** In `_index.md`, inside the generated markers, add a short "Make this editable" note:
+   > In Obsidian: *Excalidraw: Create new drawing* → **Mermaid to Excalidraw** → paste the block above (or `diagrams/system.mmd`) → save as `System.excalidraw.md`. Pasting Mermaid into any Excalidraw drawing also auto-converts.
+4. **Do not fabricate a `.excalidraw.md`.** The plugin writes it on conversion, with the current envelope and valid bindings. If the user wants you to pre-create the drawing without the plugin, that's the hand-authoring appendix in the format reference — discouraged.
 
 ## Done criteria & handoff
 
-Report files written and node/edge counts per canvas. Mention that `load-session-context` can now load this vault, and `refresh-vault` will keep it current. Remind the user to open a canvas in Obsidian once to confirm it renders (and, if they used the clone path, that the envelope matched their plugin version).
+Report the notes and `_index.md` written, the per-project/system/domain `.mmd` confirmed present, and the conversion steps for any view the user wants as an editable canvas. Mention that `load-session-context` can now load this vault and `refresh-vault` will keep the Mermaid current (re-converting a canvas is a manual re-paste, since the converted drawing becomes the user's to edit).

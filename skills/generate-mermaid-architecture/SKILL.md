@@ -78,4 +78,4 @@ flowchart LR
 
 ## Output & handoff
 
-List the files written and which view is which. Next step is **write-excalidraw**, which embeds these and builds the editable canvases.
+List the files written and which view is which. These `.mmd` files are the **source of truth** for the visual layer: `write-excalidraw` embeds them in the notes and converts them to editable Excalidraw drawings via the plugin (dagre handles layout), and `write-canvas` renders the same graph as native Canvas. Next step is **write-excalidraw** and/or **write-canvas**.
