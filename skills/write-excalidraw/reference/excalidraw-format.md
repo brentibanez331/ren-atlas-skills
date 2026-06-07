@@ -50,11 +50,14 @@ The object inside `## Drawing`:
   "roundness": { "type": 3 },
   "seed": 1, "version": 1, "versionNonce": 1, "isDeleted": false,
   "groupIds": [], "frameId": null, "boundElements": [
-    { "id": "text-web-frontend", "type": "text" }
+    { "id": "text-web-frontend", "type": "text" },
+    { "id": "arrow-web-to-gateway", "type": "arrow" }
   ],
   "updated": 1, "link": null, "locked": false
 }
 ```
+
+> **Binding is reciprocal — this is what makes arrows follow a dragged node.** The rectangle's `boundElements` MUST list its text label **and every arrow** that starts or ends on it (`{id: <arrowId>, type: "arrow"}`), in addition to the arrow's own `startBinding`/`endBinding` pointing back at the rectangle. If you set the arrow's bindings but forget to add the arrow to the box's `boundElements`, the box doesn't know about the arrow and **dragging the box leaves the arrow behind.** Every connected arrow appears in both endpoints' `boundElements`.
 
 ### Element: text (a node label, bound to its rectangle)
 
@@ -101,7 +104,9 @@ A label bound to a box uses the box's `id` as `containerId`, and the box lists t
 }
 ```
 
-For an **async** edge set `"strokeStyle": "dashed"`. `points` are relative to the arrow's `x`/`y`; bindings keep it attached when boxes move, so exact points only need to be roughly right.
+For an **async** edge set `"strokeStyle": "dashed"`. `points` are relative to the arrow's `x`/`y`; bindings keep it attached when boxes move — **but only if both endpoint rectangles also list this arrow in their `boundElements`** (see the reciprocal-binding note above). The arrow's own `boundElements` is for its label, not its endpoints.
+
+**Routing around nodes.** `points` is a polyline (`[[0,0],[dx1,dy1],…,[dxN,dyN]]`), not just two endpoints. For an edge that spans more than one rank and would otherwise cut straight through an intermediate node, add one or two interior bend points so it routes through the gap *between* node rows (offset vertically into the `ROW_GAP` lane). Bound arrows re-route on drag, so interior points only need to clear the nodes at initial layout.
 
 ### Element: arrow label (BOUND to the arrow — never free-floating)
 

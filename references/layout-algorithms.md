@@ -60,6 +60,15 @@ Run after nodes are placed, for every edge:
 
 Keep one short label per edge. A long label (`HTTP svc-token`) is itself a smell — abbreviate (`svc-token`) or move the detail to the edge's evidence, not the diagram.
 
+### Edge routing — don't cut through unrelated nodes
+
+A straight edge that spans more than one rank often slices across nodes sitting in the ranks between (the long `web → Firebase Auth` style diagonal crossing `service-b`). Two remedies, in order of preference:
+
+1. **Route with bend points.** Treat each edge as occupied space too: if the straight segment's AABB intersects a non-endpoint node box, add 1–2 interior waypoints so the polyline travels through a `ROW_GAP` lane (the empty band between node rows) instead of over the box. In Excalidraw this is interior `points` on the arrow; in Canvas, pick `fromSide`/`toSide` that send the edge out the top/bottom into a clear lane; in Mermaid, routing is automatic so this only signals "too dense — split the view".
+2. **Reduce long edges.** If many edges skip ranks, the system view is overloaded — move detail into per-project neighbor views (each shows one node + its 1-hop edges, where nothing skips a rank). Readability over completeness.
+
+Assign distinct vertical **lanes** to parallel long edges so they don't overlap each other, and never let two edges share the same corridor with both their labels.
+
 ## Edge attachment sides (Canvas)
 
 Canvas edges look best when bound to the correct side. Pick by dominant axis between node centers: if `|dx| > |dy|` use `right`→`left` (or reverse by sign), else `bottom`→`top`. (`layout-algorithms` § "Edge sides" is also referenced by `write-canvas`.)
