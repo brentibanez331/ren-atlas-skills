@@ -45,12 +45,18 @@ Canvas edges can't be dashed, so async is carried by **color + an "(async)" labe
 
 ## Labels & direction
 
-- **Every edge carries a label** = its protocol (optionally `+ channel`), e.g. `HTTP`, `gRPC Accounts/Get`, `queue events.user.* (async)`. An unlabeled arrow is a guess.
+- **Every edge carries a label** = its protocol, e.g. `HTTP`, `gRPC`, `auth`, `KMS`, `queue (async)`. An unlabeled arrow is a guess.
+- **Keep labels to ~1–2 words / ≤ 14 chars.** Long labels (`HTTP svc-token`, `gRPC Accounts/Get`) overflow the arrow and collide with neighbouring nodes — abbreviate (`svc-token`) and push the detail (full route, method, subject) into the edge's *evidence*, not the diagram.
+- **Bind the label to the edge, don't free-float it.** In Excalidraw the label is a text element with `containerId` = the arrow id (Excalidraw centers it on the line); in Canvas/Mermaid the label is a native edge property. A label placed as an independent element at the edge midpoint is what lands on top of boxes.
+- **One label per edge, one label per node.** A node has exactly one (bound) title; never stack a second text element at a node's centre. If two edges share a pair, merge them or give each a distinct short label.
 - Arrow points **from caller/producer → callee/consumer**. This is the highest-value signal in the whole diagram; getting it backwards is worse than omitting the edge.
 
 ## Common mistakes to avoid
 
-- **Overlap** — boxes stacked because y-coords were too close. Honor the spacing constants in `layout-algorithms.md`.
+- **Overlap** — boxes stacked because y-coords were too close. Honor the spacing constants in `layout-algorithms.md`, and run its **label-aware collision pass** (node boxes *and* labels are occupied space).
+- **Labels sitting on boxes** — an edge label landed on a node because the label was a free-floating element and/or the edge was too short. Bind labels to edges and lengthen short edges (wider `COL_GAP`).
+- **Doubled node titles** — two text elements at one node's centre (e.g. a title plus a stray edge label). Exactly one bound label per node.
+- **Hub fan-out bundling** — a node with 5+ targets whose edges/labels all funnel through one corridor. Spread its targets across the full height of the next rank.
 - **Everything in one diagram** — the system view is not the place for every edge. Push detail to per-project views.
 - **Unlabeled or wrong-direction edges** — see above; both destroy trust in the diagram.
 - **Externals that don't recede** — if a third-party box is as loud as your services, the muting failed.

@@ -101,9 +101,11 @@ This is the format-correctness part. Read [`reference/excalidraw-format.md`](ref
 ### Building the scene JSON
 
 For a canvas, convert graph nodes/edges into Excalidraw elements:
-- **Node → a `rectangle` element + a `text` element** (label) at a computed position. Give each a stable `id` derived from the project id (e.g. `rect-<id>`, `text-<id>`) so refresh can update in place.
-- **Edge → an `arrow` element** with `startBinding`/`endBinding` referencing the two rectangles' ids (so arrows stay attached when nodes move). Dashed `strokeStyle` for async edges.
+- **Node → one `rectangle` + exactly one `text`** label bound to it (`containerId` = rect id; rect lists the text in `boundElements`). Stable ids `rect-<id>` / `text-<id>`. **Never add a second text at a node** — that produces doubled titles.
+- **Edge → one `arrow`** with `startBinding`/`endBinding` referencing the two rectangles' ids (so arrows stay attached when nodes move). Dashed `strokeStyle` for async edges. Stable id `arrow-<from>-<to>`.
+- **Edge label → a `text` bound to the arrow** (`containerId` = arrow id; arrow lists it in `boundElements`), id `label-<from>-<to>`. This is the only correct way to label an edge — a free-floating text element at the midpoint lands on top of boxes. One short label per edge. See the arrow-label section in the format reference.
 - Each text element's `rawText` must also be listed under `## Text Elements` as `<rawText> ^<elementId>` (the plugin indexes text there).
+- After placing everything, run the **label-aware collision pass** from the layout reference: if any edge label overlaps a node, the spacing is too tight or the label too long — widen `COL_GAP`/`ROW_GAP` or abbreviate, then re-check before writing.
 
 **Layout:** use the layered algorithm and spacing constants from [`layout-algorithms.md`](../../references/layout-algorithms.md) (sources left → stores right, barycenter ordering within ranks). Deterministic coordinates only — do not randomize positions, and on refresh keep existing element positions.
 

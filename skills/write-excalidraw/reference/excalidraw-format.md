@@ -103,9 +103,43 @@ A label bound to a box uses the box's `id` as `containerId`, and the box lists t
 
 For an **async** edge set `"strokeStyle": "dashed"`. `points` are relative to the arrow's `x`/`y`; bindings keep it attached when boxes move, so exact points only need to be roughly right.
 
+### Element: arrow label (BOUND to the arrow — never free-floating)
+
+This is the fix for labels landing on top of boxes. **Do not create a standalone text element for an edge label.** Instead bind a text element to the arrow via `containerId = <arrow id>`, and list it in the arrow's `boundElements`. Excalidraw then renders the label centered on the line and keeps it there when nodes move.
+
+Add to the arrow:
+```json
+"boundElements": [ { "id": "label-web-to-gateway", "type": "text" } ]
+```
+
+And the label text element:
+```json
+{
+  "type": "text",
+  "id": "label-web-to-gateway",
+  "x": 330, "y": 122, "width": 40, "height": 20, "angle": 0,
+  "strokeColor": "#495057", "backgroundColor": "transparent",
+  "fillStyle": "solid", "strokeWidth": 1, "strokeStyle": "solid",
+  "roughness": 1, "opacity": 100, "roundness": null,
+  "seed": 4, "version": 1, "versionNonce": 4, "isDeleted": false,
+  "groupIds": [], "frameId": null, "boundElements": [],
+  "updated": 1, "link": null, "locked": false,
+  "text": "HTTP", "rawText": "HTTP", "fontSize": 14, "fontFamily": 2,
+  "textAlign": "center", "verticalAlign": "middle",
+  "containerId": "arrow-web-to-gateway",
+  "originalText": "HTTP", "lineHeight": 1.25
+}
+```
+
+Rules for labels:
+- **Exactly one bound label per arrow.** A text element bound to an arrow (`containerId` = arrow id) is auto-placed by Excalidraw at the line midpoint — that is the only correct way to label an edge.
+- **Exactly one bound label per node** (`containerId` = rectangle id). Never emit a second title/text element at a node's position — that is what produces the doubled `service` / `api` overlaps.
+- Keep edge labels to one short token (`HTTP`, `gRPC`, `auth`, `KMS`). A bound label longer than the arrow gets clipped; abbreviate instead.
+- If two edges run between the same pair, give them distinct short labels or merge them into one edge — don't stack two labels on one line.
+
 ## Rules for `write-excalidraw`
 
-- Stable `id`s: `rect-<projectId>`, `text-<projectId>`, `arrow-<from>-<to>` — lets `refresh-vault` update elements in place instead of duplicating.
+- Stable `id`s: `rect-<projectId>`, `text-<projectId>` (node label, bound to the rect), `arrow-<from>-<to>`, `label-<from>-<to>` (edge label, bound to the arrow) — lets `refresh-vault` update elements in place instead of duplicating.
 - Every `text` whose label you want indexed must also appear under `## Text Elements` as `<rawText> ^<id>`.
-- Deterministic layout (grid/layered). Never randomize positions — it explodes diffs on refresh.
+- Deterministic layout (grid/layered) following [`../../../references/layout-algorithms.md`](../../../references/layout-algorithms.md), including its **label-aware collision pass** — verify no node box, node label, or edge label overlaps another before emitting. Never randomize positions — it explodes diffs on refresh.
 - `seed`/`versionNonce`/`updated` can be small fixed integers; the plugin rewrites them on first save. Do not call a random function to set them (and note: random/time APIs are unavailable in workflow scripts anyway).
