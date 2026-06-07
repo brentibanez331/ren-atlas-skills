@@ -39,6 +39,57 @@ When there's no meaningful topology (e.g. an index of every project): `cols = ce
 
 Only when layered still produces a hairball. Sketch: repulsion between all node pairs (`k_rep / d²`), spring attraction along edges (`k_spring · (d − restLen)`), ~100 iterations, then **snap final coordinates to a 20px grid** so the result is stable across refreshes (a raw force layout is non-deterministic and will churn diffs).
 
+## 5. Sequence diagram layout
+
+For call traces (`map-flow`). Participants are columns; time runs downward.
+
+```
+SEQ_MARGIN = 50
+PH = 48                         # participant header height
+COL_W = max(190, longestLabel*9 + 50)
+PW = COL_W - 50                 # header box width (centered in its column)
+ROW = 64                        # vertical gap between messages
+GAP_TOP = 48                    # header bottom -> first message
+```
+
+- **Column center** of participant `i`: `cx_i = SEQ_MARGIN + i*COL_W + COL_W/2`.
+- **Header**: rectangle at `(cx_i - PW/2, SEQ_MARGIN, PW, PH)`, design-system fill by role, with a bound centered label.
+- **Lifeline**: a vertical **dashed `line`** (`strokeColor #adb5bd`) from `(cx_i, SEQ_MARGIN+PH)` down to `bottomY = firstY + (M-1)*ROW + 40`. **Group** header + label + lifeline under one `groupIds:["grp-<id>"]` so the column moves as a unit.
+- **Message `j`** (in time order): `y = SEQ_MARGIN + PH + GAP_TOP + j*ROW`. A horizontal **arrow** from `cx_from` to `cx_to` at `y`, `endArrowhead:"arrow"`, with one bound label. `async` → `strokeStyle:"dashed"` + async color. Message arrows are **not** shape-bound (they ride the time axis).
+- **Self-message** (`from==to`): a small loop — `points:[[0,0],[46,0],[46,26],[0,26]]` from `(cx,y)`, label to the right.
+- Optional **activation bar**: a thin rectangle (`width 8`) centered on the lifeline spanning the active rows.
+
+## 6. Class diagram layout
+
+Class boxes laid out **layered top-down** (parents above children for inheritance) — reuse §1 with `rankdir = TB` — or a grid (§3) for unrelated classes.
+
+- **Class box** = one rectangle with up to three stacked compartments separated by horizontal **`line`** dividers: **name** (centered, `y`-top, height 28), **attributes** (left-aligned block, `nAttr*18 + 12`), **methods** (`nMeth*18 + 12`). Box width = `max(160, longestMember*7 + 24)`; height = sum of compartment heights.
+- Compartment texts are the **class-box exception to "one label per node"**: they are positioned absolutely inside the box (name centered, attributes/methods `textAlign:"left"`, multi-line via `\n`) and **grouped** with the box (`groupIds:["class-<name>"]`), not `containerId`-bound. The dividers share the group too.
+- **Relations** are arrows with **semantic arrowheads**, reciprocally bound to the two boxes:
+  | Relation | Arrowhead (at which end) | Style |
+  |---|---|---|
+  | inheritance / realization | `"triangle"` at the parent | realization dashed |
+  | composition | `"diamond"` (filled) at the owner | solid |
+  | aggregation | `"diamond"` (outline) at the owner | solid |
+  | association | `"arrow"` or none | solid |
+  | dependency | `"arrow"` | dashed |
+
+## 7. Mindmap layout
+
+Hierarchical radial — central root, branches fanning outward.
+
+```
+ROOT at canvas center (cx, cy)
+R1 = 320        # radius of level-1 ring
+R_STEP = 220    # added radius per deeper level
+```
+
+- **Root**: an `ellipse` or rounded rectangle centered at `(cx, cy)`, bound label.
+- **Level 1**: `N` branches evenly around the circle — branch `i` at angle `θ_i = i*2π/N`, position `(cx + R1·cosθ_i - w/2, cy + R1·sinθ_i - h/2)`.
+- **Deeper levels**: recurse. Each node's children fan out within an **angular sector centered on the parent's outward direction**, sized proportionally to the subtree's leaf count (so dense branches get more arc); radius increases by `R_STEP` per level.
+- **Connections**: a `line` (or light arrow) from parent to child. **Color each top-level branch a consistent hue** (pick distinct design-system fills per branch) so the eye groups them.
+- Labels bound to nodes; keep them short.
+
 ## Collision guard (label-aware — this is the step that was missing)
 
 Overlap isn't just node-vs-node. Treat **four kinds of rectangle as occupied space**: node boxes, node labels, edge labels, and (loosely) the arrows themselves. Build an axis-aligned bounding box (AABB) for each and ensure none intersect (with `LABEL_PAD` slack). Most messy diagrams come from skipping the label AABBs.

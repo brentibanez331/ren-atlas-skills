@@ -22,7 +22,7 @@ Each skill is useful on its own, but they chain through two shared JSON contract
 | [`map-project`](skills/map-project) | Discover | a root path *or* explicit paths | `manifest.json` |
 | [`detect-connections`](skills/detect-connections) | Relate | `manifest.json` | `graph.json` |
 | [`generate-mermaid-architecture`](skills/generate-mermaid-architecture) | Visualize | `graph.json` + `manifest.json` | `diagrams/*.mmd` |
-| [`write-excalidraw`](skills/write-excalidraw) | Persist | manifest + graph + diagrams | vault notes + embedded Mermaid + `summaries.json` + `.excalidraw.md` (dagre-laid-out via a bundled converter; in-plugin conversion fallback) |
+| [`write-excalidraw`](skills/write-excalidraw) | Persist | manifest + graph + diagrams | vault notes + embedded Mermaid + `summaries.json` + hand-authored `.excalidraw.md` (strict positioning/color/spacing, bound arrows) |
 | [`write-canvas`](skills/write-canvas) | Persist | manifest + graph (+ notes) | `.canvas` files with file-linked nodes |
 | [`map-flow`](skills/map-flow) | Deep-dive | a capability + the files/projects it spans | `flows/<slug>.md` (sequence/flow/class Mermaid + evidence) + `.atlas/flows/<slug>.json` |
 | [`load-session-context`](skills/load-session-context) | Recall | vault `summaries.json` | structured context text (stdout) |
@@ -44,8 +44,8 @@ Everything the pipeline produces is stored under a single `.atlas/` directory in
     ├── _index.md                 # map-of-content: system diagram + links to every project
     ├── <project>.md              # one generated note per project
     ├── System.canvas             # native Obsidian Canvas: clickable, file-linked system map
-    ├── System.excalidraw.md      # editable Excalidraw, dagre-laid-out by the bundled converter
-    ├── <domain>.excalidraw.md    # optional per-domain canvases (same converter)
+    ├── System.excalidraw.md      # editable Excalidraw, hand-authored to strict specs
+    ├── <domain>.excalidraw.md    # optional per-domain canvases (hand-authored)
     ├── flows/                    # map-flow deep dives (one capability each, linked back to the notes)
     │   ├── _flows.md             # index of all flows
     │   └── <slug>.md             # e.g. checkout.md — sequence/flow/class Mermaid + evidence
@@ -100,9 +100,7 @@ Cross-skill design guidance lives in [`references/`](references) (referenced by 
 - [`layout-algorithms.md`](references/layout-algorithms.md) — deterministic layouts; layered-by-dependency-depth is the architecture default
 - [`mermaid-syntax.md`](references/mermaid-syntax.md) — error-prevention rules so generated Mermaid always renders
 
-And a shared converter in [`scripts/`](scripts) (used by `write-excalidraw` and `map-flow`):
-
-- [`convert.mjs`](scripts/convert.mjs) — a graph spec → a properly-bound `.excalidraw.md`, in Node with no browser. `--type flowchart` (default) lays out nodes+edges with dagre; `--type sequence` lays out participants + timed messages as lifelines. `npm install --prefix scripts` once.
+Excalidraw canvases are **hand-authored** to these specs (no converter, no dependencies): `layout-algorithms.md` covers exact positioning per diagram type (graph/flowchart, sequence, class, mindmap), and `write-excalidraw/reference/excalidraw-format.md` covers the element schemas + mandatory binding rules.
 
 ## License
 

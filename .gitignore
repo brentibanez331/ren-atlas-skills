@@ -4,7 +4,7 @@
 .idea/
 .vscode/
 
-# Installed converter deps (restored via `npm install` in the skill)
+# Node deps, if any
 node_modules/
 package-lock.json
 

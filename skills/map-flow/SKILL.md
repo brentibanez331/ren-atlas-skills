@@ -90,29 +90,18 @@ After the closing marker, leave a `## Notes` heading for the human. Also wikilin
   `refresh-vault` reads this: if any `sourceFile` changed, it flags the flow **stale** (it does not auto-rewrite — flows are curated).
 - Optionally link `_index.md` → `[[flows/_flows]]` inside a **separate** `<!-- atlas:flows:start --> … <!-- atlas:flows:end -->` block (idempotent). Do **not** touch the `atlas:generated` region that `write-excalidraw` owns.
 
-## Canvas (optional) — by diagram type
+## Canvas (optional) — hand-authored
 
-The embedded Mermaid renders natively in Obsidian (read mode). For an *editable* Excalidraw, the shared `<pack>/scripts/convert.mjs` (Node, no browser) handles **two** of the three forms; only classDiagram needs the plugin:
+The embedded Mermaid renders natively in Obsidian (read mode). For an *editable* Excalidraw of a flow, **hand-author it** to the strict specs — the same way `write-excalidraw` does, but using the layout section that matches the diagram form you chose:
 
-- **Flowchart flows → `convert.mjs --type flowchart`** (the default). Emit a flow-shaped graph to `<vault>/Architecture/.atlas/flows/<slug>.graph.json`:
-  ```
-  node <pack>/scripts/convert.mjs \
-    --graph <vault>/Architecture/.atlas/flows/<slug>.graph.json \
-    --out   <vault>/Architecture/flows/<slug>.excalidraw.md
-  ```
-  Shape it like the topology graph — `nodes:[{ id, label, kind|color|type }]`, `edges:[{ from, to, label, sync }]`. Set each node's `kind` (`app`/`service`/`lib`/`tool`), `color`, or `type:"external"` so it's colored per the design system (no manifest needed). dagre layout, routed edges, reciprocal bindings (arrows follow drags).
+- **sequenceDiagram** → [`layout-algorithms.md` §5 (sequence)](../../references/layout-algorithms.md) — participant columns, dashed lifelines, timed message rows, self-loops.
+- **flowchart** → §1 (layered) + edge routing.
+- **classDiagram** → §6 (class) — compartment boxes, semantic relation arrowheads.
+- **mindmap** → §7 (mindmap) — central root + radial branches.
 
-- **Sequence flows → `convert.mjs --type sequence`.** Emit `<vault>/Architecture/.atlas/flows/<slug>.seq.json`:
-  ```
-  node <pack>/scripts/convert.mjs --type sequence \
-    --graph <vault>/Architecture/.atlas/flows/<slug>.seq.json \
-    --out   <vault>/Architecture/flows/<slug>.excalidraw.md
-  ```
-  Shape: `participants:[{ id, label, kind|color }]`, `messages:[{ from, to, label, sync }]` in time order. Produces evenly-spaced participant headers with dashed lifelines (header+lifeline grouped so they move together), timed message arrows top→bottom, async messages dashed-orange, and self-messages as small loops. No dagre, no browser.
+Encode with the element schemas and **mandatory binding rules** in [`write-excalidraw/reference/excalidraw-format.md`](../write-excalidraw/reference/excalidraw-format.md) (reciprocal binding, bound labels, stable ids), color per [`design-system.md`](../../references/design-system.md), and run the collision check before writing. Write each as `<vault>/Architecture/flows/<slug>.excalidraw.md` (or `<slug>.<diagram>.excalidraw.md` if a flow has several).
 
-- **classDiagram flows → in-plugin conversion.** `convert.mjs` doesn't model class members/relation arrowheads. Use the in-plugin **Mermaid to Excalidraw**, or leave it as the natively-rendered embedded Mermaid.
-
-Both script paths share the overwrite policy: they **refuse if the output exists** (exit 3); only `--force` (on explicit user request) overwrites in place, never deletes. If you emitted multiple diagrams for one flow, convert each by its own rule and write them as `<slug>.<diagram>.excalidraw.md`.
+**Overwrite policy:** never overwrite or delete an existing flow canvas unless the user explicitly asks to regenerate *that* file (then warn manual edits are lost).
 
 ## Guardrails
 
