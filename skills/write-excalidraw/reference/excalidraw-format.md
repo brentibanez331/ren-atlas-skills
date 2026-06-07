@@ -1,28 +1,34 @@
-# Excalidraw from Mermaid — the conversion method
+# How Excalidraw canvases are produced
 
-**Don't hand-author Excalidraw scenes.** The [Obsidian-Excalidraw plugin](https://github.com/zsviczian/obsidian-excalidraw-plugin) bundles Excalidraw's own [`mermaid-to-excalidraw`](https://github.com/excalidraw/mermaid-to-excalidraw) converter, which runs Mermaid's dagre layout engine and emits correctly-positioned elements **with proper reciprocal bindings**. That solves — at the source — every layout, overlap, label, and "arrows don't follow the node" problem that hand-placing coordinates created.
+**Don't hand-place coordinates.** Layout is done by **dagre** — the same layered graph-layout engine Mermaid's flowcharts use under the hood. It positions nodes without overlap, routes edges around nodes (real bend points), and lets us emit correct reciprocal bindings so arrows follow a dragged node. That fixes — at the source — every layout/overlap/label/drag problem hand-placing created.
 
-Since `generate-mermaid-architecture` already produces clean Mermaid, the Excalidraw view is just that Mermaid, converted. **Mermaid is the source of truth; Excalidraw is a rendering of it.**
+`graph.json` is the source of truth; the Excalidraw canvas is a dagre rendering of it.
 
-## Workflow (zero dependencies — the plugin does the work)
+## Primary path: the bundled converter (`scripts/convert.mjs`)
 
-1. Ensure the view's Mermaid exists at `<vault>/Architecture/.atlas/diagrams/*.mmd` (system, per-project, per-domain) — produced by `generate-mermaid-architecture`.
-2. In Obsidian, create a new Excalidraw drawing (command palette → *Excalidraw: Create new drawing*), open **Mermaid to Excalidraw**, and **paste the `.mmd` contents**. The plugin lays it out and writes the `.excalidraw.md` for you. (Pasting Mermaid directly into an Excalidraw drawing also auto-converts.)
-3. Save it as `Architecture/System.excalidraw.md` (or `<domain>.excalidraw.md`). It's now a fully editable, properly-bound drawing.
+Pure Node + [`@dagrejs/dagre`](https://github.com/dagrejs/dagre) (~2 MB, no browser/DOM). Reads `graph.json` (+ `manifest.json` for role colors) and writes a valid `.excalidraw.md`:
 
-Because the plugin authors the file, you get the current envelope and valid bindings automatically — no version-drift worries, no hand-placed `x`/`y`.
+```
+npm install --prefix <skill>/scripts          # once
+node <skill>/scripts/convert.mjs \
+  --graph <vault>/Architecture/.atlas/graph.json \
+  --manifest <vault>/Architecture/.atlas/manifest.json \
+  --out <vault>/Architecture/System.excalidraw.md
+```
 
-## What `write-excalidraw` actually does for the Excalidraw view
+It produces: dagre-laid-out rectangles coloured by `kind`, one bound label per node, arrows with `startBinding`/`endBinding` **and** reciprocal `boundElements` on both rectangles (drag works), routed polyline `points`, dashed orange async edges, and one short bound label per edge — all per the design system.
 
-- It does **not** write `.excalidraw.md` scene JSON.
-- It makes the conversion frictionless: confirm the `.mmd` files exist, embed the relevant Mermaid in the notes (the per-project note already embeds its neighbor view; `_index.md` embeds the system view), and tell the user the one-time conversion steps above for any view they want editable.
-- The Mermaid carries the design-system colors via `classDef`; the converter maps most of them. Bespoke styling (exact fonts, hand-drawn roughness) is applied *after* conversion, in Excalidraw, if wanted.
+**Overwrite policy:** the script **refuses if the output exists** (exit 3). Pass `--force` only when the user explicitly asks to regenerate/update that canvas — and warn that it discards manual edits to that drawing. It overwrites in place; it never deletes.
+
+## Fallback path: in-plugin conversion (zero deps, manual)
+
+The [Obsidian-Excalidraw plugin](https://github.com/zsviczian/obsidian-excalidraw-plugin) bundles Excalidraw's own [`mermaid-to-excalidraw`](https://github.com/excalidraw/mermaid-to-excalidraw) converter (also dagre). If the user prefers no Node dependency: in Obsidian, *Excalidraw: Create new drawing* → **Mermaid to Excalidraw** → paste the view's `.mmd` (or the Mermaid embedded in `_index.md`) → save. The plugin writes the file; you write nothing. (Running `mermaid-to-excalidraw` headless in Node is avoided on purpose — mermaid needs a real browser DOM, so it's flaky outside Obsidian; the bundled dagre converter sidesteps that.)
 
 ## Fidelity notes
 
-- Converter is strongest on **flowcharts** — what our views are. Unsupported shapes (subroutine/hexagon/cylinder) fall back to rectangle; that's fine for architecture.
-- Mermaid **subgraphs** (domains) convert with varying fidelity across plugin versions — check domain groupings after converting.
-- After conversion the file is the **user's** to edit. `refresh-vault` regenerates the source `.mmd` and flags the canvas as stale rather than overwriting their edited drawing.
+- dagre layout is strongest on flowchart-style DAGs — what our views are.
+- Role colors come from `manifest.kind` via the design-system palette; bespoke styling (exact fonts, hand-drawn roughness) is applied after, in Excalidraw, if wanted.
+- A generated canvas becomes the **user's** to edit. `refresh-vault` regenerates the source `graph.json`/`.mmd` and flags the canvas stale rather than overwriting an edited drawing (unless the user asks to regenerate).
 
 ---
 

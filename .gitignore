@@ -4,5 +4,9 @@
 .idea/
 .vscode/
 
+# Installed converter deps (restored via `npm install` in the skill)
+node_modules/
+package-lock.json
+
 # Atlas runtime artifacts (generated into a vault, not part of the pack)
 .atlas/

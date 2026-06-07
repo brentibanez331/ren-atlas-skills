@@ -22,7 +22,7 @@ Each skill is useful on its own, but they chain through two shared JSON contract
 | [`map-project`](skills/map-project) | Discover | a root path *or* explicit paths | `manifest.json` |
 | [`detect-connections`](skills/detect-connections) | Relate | `manifest.json` | `graph.json` |
 | [`generate-mermaid-architecture`](skills/generate-mermaid-architecture) | Visualize | `graph.json` + `manifest.json` | `diagrams/*.mmd` |
-| [`write-excalidraw`](skills/write-excalidraw) | Persist | manifest + graph + diagrams | vault notes + embedded Mermaid + `summaries.json`; Excalidraw via the plugin's Mermaid→Excalidraw conversion |
+| [`write-excalidraw`](skills/write-excalidraw) | Persist | manifest + graph + diagrams | vault notes + embedded Mermaid + `summaries.json` + `.excalidraw.md` (dagre-laid-out via a bundled converter; in-plugin conversion fallback) |
 | [`write-canvas`](skills/write-canvas) | Persist | manifest + graph (+ notes) | `.canvas` files with file-linked nodes |
 | [`load-session-context`](skills/load-session-context) | Recall | vault `summaries.json` | structured context text (stdout) |
 | [`refresh-vault`](skills/refresh-vault) | Maintain | vault + repos (git/mtime) | updated notes/diagrams/canvases + `state.json` |
@@ -41,8 +41,8 @@ Everything the pipeline produces is stored under a single `.atlas/` directory in
     ├── _index.md                 # map-of-content: system diagram + links to every project
     ├── <project>.md              # one generated note per project
     ├── System.canvas             # native Obsidian Canvas: clickable, file-linked system map
-    ├── System.excalidraw.md      # editable Excalidraw, made by converting the system Mermaid in-plugin
-    ├── <domain>.excalidraw.md    # optional per-domain canvases (same conversion)
+    ├── System.excalidraw.md      # editable Excalidraw, dagre-laid-out by the bundled converter
+    ├── <domain>.excalidraw.md    # optional per-domain canvases (same converter)
     └── .atlas/                   # machine artifacts (the pipeline's working state)
         ├── manifest.json         # output of map-project
         ├── graph.json            # output of detect-connections
