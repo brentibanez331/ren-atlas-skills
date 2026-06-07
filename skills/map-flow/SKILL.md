@@ -90,9 +90,20 @@ After the closing marker, leave a `## Notes` heading for the human. Also wikilin
   `refresh-vault` reads this: if any `sourceFile` changed, it flags the flow **stale** (it does not auto-rewrite — flows are curated).
 - Optionally link `_index.md` → `[[flows/_flows]]` inside a **separate** `<!-- atlas:flows:start --> … <!-- atlas:flows:end -->` block (idempotent). Do **not** touch the `atlas:generated` region that `write-excalidraw` owns.
 
-## Canvas (optional)
+## Canvas (optional) — by diagram type
 
-The embedded Mermaid renders natively in Obsidian (read mode). For an *editable* Excalidraw of a flow, use the in-plugin **Mermaid to Excalidraw** conversion (it handles sequence and class diagrams). Do **not** use `write-excalidraw`'s `convert.mjs` — that's dagre/flowchart over `graph.json` and has no concept of a flow trace.
+The embedded Mermaid renders natively in Obsidian (read mode). For an *editable* Excalidraw, which path you use depends on the diagram form:
+
+- **Flowchart flows → reuse the shared converter.** `<pack>/scripts/convert.mjs` is a generic *nodes+edges graph → dagre flowchart* tool, not topology-specific. Emit a flow-shaped graph to `<vault>/Architecture/.atlas/flows/<slug>.graph.json` and run it:
+  ```
+  node <pack>/scripts/convert.mjs \
+    --graph <vault>/Architecture/.atlas/flows/<slug>.graph.json \
+    --out   <vault>/Architecture/flows/<slug>.excalidraw.md
+  ```
+  Shape the flow graph like the topology one — `nodes: [{ id, label, kind|color|type }]`, `edges: [{ from, to, label, sync }]`. Set each participant's `kind` (`app`/`service`/`lib`/`tool`) or `color`, or `type:"external"` for third parties, so the converter colors them per the design system (no manifest needed). You get the same dagre layout, routed edges, and reciprocal bindings (arrows follow drags), and the same overwrite policy (refuses unless `--force`).
+- **sequenceDiagram / classDiagram flows → in-plugin conversion.** `convert.mjs` can't model lifelines/time (sequence) or class members/relations — those are different layout models. Use the in-plugin **Mermaid to Excalidraw** (it handles both), or leave them as the natively-rendered embedded Mermaid.
+
+If you emitted multiple diagrams, you can convert each by its own rule (e.g. the flowchart via the script, the classDiagram via the plugin).
 
 ## Guardrails
 

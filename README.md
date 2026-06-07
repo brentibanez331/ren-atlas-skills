@@ -100,6 +100,10 @@ Cross-skill design guidance lives in [`references/`](references) (referenced by 
 - [`layout-algorithms.md`](references/layout-algorithms.md) — deterministic layouts; layered-by-dependency-depth is the architecture default
 - [`mermaid-syntax.md`](references/mermaid-syntax.md) — error-prevention rules so generated Mermaid always renders
 
+And a shared converter in [`scripts/`](scripts) (used by `write-excalidraw` and `map-flow`):
+
+- [`convert.mjs`](scripts/convert.mjs) — any nodes+edges graph → a dagre-laid-out, properly-bound `.excalidraw.md` (pure Node + `@dagrejs/dagre`, no browser). `npm install --prefix scripts` once.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).

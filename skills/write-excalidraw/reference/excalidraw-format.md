@@ -4,13 +4,13 @@
 
 `graph.json` is the source of truth; the Excalidraw canvas is a dagre rendering of it.
 
-## Primary path: the bundled converter (`scripts/convert.mjs`)
+## Primary path: the shared converter (`<pack>/scripts/convert.mjs`)
 
-Pure Node + [`@dagrejs/dagre`](https://github.com/dagrejs/dagre) (~2 MB, no browser/DOM). Reads `graph.json` (+ `manifest.json` for role colors) and writes a valid `.excalidraw.md`:
+Pure Node + [`@dagrejs/dagre`](https://github.com/dagrejs/dagre) (~2 MB, no browser/DOM). Reads a nodes+edges graph (`graph.json`, + `manifest.json` for role colors) and writes a valid `.excalidraw.md`. It lives at the pack root because `map-flow` reuses it for flowchart flows:
 
 ```
-npm install --prefix <skill>/scripts          # once
-node <skill>/scripts/convert.mjs \
+npm install --prefix <pack>/scripts          # once  (<pack> = the pack root, parent of skills/)
+node <pack>/scripts/convert.mjs \
   --graph <vault>/Architecture/.atlas/graph.json \
   --manifest <vault>/Architecture/.atlas/manifest.json \
   --out <vault>/Architecture/System.excalidraw.md

@@ -1,5 +1,9 @@
 #!/usr/bin/env node
-// Atlas: graph.json -> .excalidraw.md, using dagre for layout (no browser/DOM).
+// Atlas: a generic graph (nodes + edges) -> .excalidraw.md, laid out with dagre (no browser/DOM).
+// Used by write-excalidraw (topology graph.json) AND map-flow (a flow-shaped graph for flowchart flows).
+// Node coloring precedence: node.color -> FILL[node.kind] -> external -> manifest kind -> white.
+// Flowchart-shaped graphs only; sequenceDiagram/classDiagram are a different layout model
+// (use the in-plugin Mermaid-to-Excalidraw for those).
 import fs from "node:fs";
 import path from "node:path";
 import dagre from "@dagrejs/dagre";
@@ -23,7 +27,9 @@ const kindOf = Object.fromEntries((manifest.projects || []).map(p => [p.id, p.ki
 // ---- design-system palette ----
 const FILL = { app: "#a5d8ff", website: "#a5d8ff", mobile: "#a5d8ff", service: "#d0bfff", function: "#d0bfff", lib: "#e9ecef", tool: "#fff3bf", external: "#f1f3f5" };
 const STROKE = "#1e1e1e", LABEL = "#495057", ASYNC = "#e8590c";
-const fillFor = n => n.type === "external" ? FILL.external : (FILL[kindOf[n.id]] || "#ffffff");
+// node.color wins, then node.kind, then external, then manifest kind, then white.
+// This lets map-flow color flow participants (which aren't manifest projects) directly.
+const fillFor = n => n.color || FILL[n.kind] || (n.type === "external" ? FILL.external : (FILL[kindOf[n.id]] || "#ffffff"));
 const labelOf = n => n.label || (manifest.projects.find(p => p.id === n.id)?.name) || n.id;
 
 // ---- dagre layout ----
