@@ -100,6 +100,8 @@ Your job is to make conversion frictionless, not to draw:
    > In Obsidian: *Excalidraw: Create new drawing* → **Mermaid to Excalidraw** → paste the block above (or `diagrams/system.mmd`) → save as `System.excalidraw.md`. Pasting Mermaid into any Excalidraw drawing also auto-converts.
 4. **Do not fabricate a `.excalidraw.md`.** The plugin writes it on conversion, with the current envelope and valid bindings. If the user wants you to pre-create the drawing without the plugin, that's the hand-authoring appendix in the format reference — discouraged.
 
+> **NEVER delete or overwrite an existing `.excalidraw.md` (or any other file you didn't create this run).** A `System.excalidraw.md` / `<domain>.excalidraw.md` in the vault is the user's converted, hand-edited drawing — leave it completely untouched. This skill only *adds* markdown notes and the conversion instructions; it removes nothing. If a canvas looks stale, report it as stale — do not regenerate or delete it.
+
 ## Done criteria & handoff
 
 Report the notes and `_index.md` written, the per-project/system/domain `.mmd` confirmed present, and the conversion steps for any view the user wants as an editable canvas. Mention that `load-session-context` can now load this vault and `refresh-vault` will keep the Mermaid current (re-converting a canvas is a manual re-paste, since the converted drawing becomes the user's to edit).
