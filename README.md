@@ -102,7 +102,7 @@ Cross-skill design guidance lives in [`references/`](references) (referenced by 
 
 And a shared converter in [`scripts/`](scripts) (used by `write-excalidraw` and `map-flow`):
 
-- [`convert.mjs`](scripts/convert.mjs) — any nodes+edges graph → a dagre-laid-out, properly-bound `.excalidraw.md` (pure Node + `@dagrejs/dagre`, no browser). `npm install --prefix scripts` once.
+- [`convert.mjs`](scripts/convert.mjs) — a graph spec → a properly-bound `.excalidraw.md`, in Node with no browser. `--type flowchart` (default) lays out nodes+edges with dagre; `--type sequence` lays out participants + timed messages as lifelines. `npm install --prefix scripts` once.
 
 ## License
 

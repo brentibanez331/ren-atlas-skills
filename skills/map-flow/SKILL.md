@@ -92,18 +92,27 @@ After the closing marker, leave a `## Notes` heading for the human. Also wikilin
 
 ## Canvas (optional) — by diagram type
 
-The embedded Mermaid renders natively in Obsidian (read mode). For an *editable* Excalidraw, which path you use depends on the diagram form:
+The embedded Mermaid renders natively in Obsidian (read mode). For an *editable* Excalidraw, the shared `<pack>/scripts/convert.mjs` (Node, no browser) handles **two** of the three forms; only classDiagram needs the plugin:
 
-- **Flowchart flows → reuse the shared converter.** `<pack>/scripts/convert.mjs` is a generic *nodes+edges graph → dagre flowchart* tool, not topology-specific. Emit a flow-shaped graph to `<vault>/Architecture/.atlas/flows/<slug>.graph.json` and run it:
+- **Flowchart flows → `convert.mjs --type flowchart`** (the default). Emit a flow-shaped graph to `<vault>/Architecture/.atlas/flows/<slug>.graph.json`:
   ```
   node <pack>/scripts/convert.mjs \
     --graph <vault>/Architecture/.atlas/flows/<slug>.graph.json \
     --out   <vault>/Architecture/flows/<slug>.excalidraw.md
   ```
-  Shape the flow graph like the topology one — `nodes: [{ id, label, kind|color|type }]`, `edges: [{ from, to, label, sync }]`. Set each participant's `kind` (`app`/`service`/`lib`/`tool`) or `color`, or `type:"external"` for third parties, so the converter colors them per the design system (no manifest needed). You get the same dagre layout, routed edges, and reciprocal bindings (arrows follow drags), and the same overwrite policy (refuses unless `--force`).
-- **sequenceDiagram / classDiagram flows → in-plugin conversion.** `convert.mjs` can't model lifelines/time (sequence) or class members/relations — those are different layout models. Use the in-plugin **Mermaid to Excalidraw** (it handles both), or leave them as the natively-rendered embedded Mermaid.
+  Shape it like the topology graph — `nodes:[{ id, label, kind|color|type }]`, `edges:[{ from, to, label, sync }]`. Set each node's `kind` (`app`/`service`/`lib`/`tool`), `color`, or `type:"external"` so it's colored per the design system (no manifest needed). dagre layout, routed edges, reciprocal bindings (arrows follow drags).
 
-If you emitted multiple diagrams, you can convert each by its own rule (e.g. the flowchart via the script, the classDiagram via the plugin).
+- **Sequence flows → `convert.mjs --type sequence`.** Emit `<vault>/Architecture/.atlas/flows/<slug>.seq.json`:
+  ```
+  node <pack>/scripts/convert.mjs --type sequence \
+    --graph <vault>/Architecture/.atlas/flows/<slug>.seq.json \
+    --out   <vault>/Architecture/flows/<slug>.excalidraw.md
+  ```
+  Shape: `participants:[{ id, label, kind|color }]`, `messages:[{ from, to, label, sync }]` in time order. Produces evenly-spaced participant headers with dashed lifelines (header+lifeline grouped so they move together), timed message arrows top→bottom, async messages dashed-orange, and self-messages as small loops. No dagre, no browser.
+
+- **classDiagram flows → in-plugin conversion.** `convert.mjs` doesn't model class members/relation arrowheads. Use the in-plugin **Mermaid to Excalidraw**, or leave it as the natively-rendered embedded Mermaid.
+
+Both script paths share the overwrite policy: they **refuse if the output exists** (exit 3); only `--force` (on explicit user request) overwrites in place, never deletes. If you emitted multiple diagrams for one flow, convert each by its own rule and write them as `<slug>.<diagram>.excalidraw.md`.
 
 ## Guardrails
 
