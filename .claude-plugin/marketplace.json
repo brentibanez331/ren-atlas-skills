@@ -1,0 +1,41 @@
+{
+  "name": "ren-atlas-skills",
+  "owner": {
+    "name": "brentibanez331",
+    "email": "brent.ibanez1@gmail.com"
+  },
+  "description": "Turn one-or-many codebases into a living, Obsidian-based architecture atlas.",
+  "plugins": [
+    {
+      "name": "ren-atlas",
+      "source": "./",
+      "description": "Seven skills: discover projects across monorepos or separate repos, detect cross-boundary connections, generate Mermaid + Excalidraw + native Obsidian Canvas, load scoped session context, and keep the vault fresh as code changes.",
+      "author": {
+        "name": "brentibanez331"
+      },
+      "homepage": "https://github.com/brentibanez331/ren-atlas-skills",
+      "repository": "https://github.com/brentibanez331/ren-atlas-skills",
+      "license": "MIT",
+      "category": "productivity",
+      "keywords": [
+        "architecture",
+        "obsidian",
+        "mermaid",
+        "excalidraw",
+        "canvas",
+        "monorepo",
+        "codebase-map",
+        "diagrams"
+      ],
+      "skills": [
+        "./skills/map-project",
+        "./skills/detect-connections",
+        "./skills/generate-mermaid-architecture",
+        "./skills/write-excalidraw",
+        "./skills/write-canvas",
+        "./skills/load-session-context",
+        "./skills/refresh-vault"
+      ]
+    }
+  ]
+}

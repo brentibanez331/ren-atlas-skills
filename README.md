@@ -67,7 +67,18 @@ Generated regions inside every note are wrapped in markers:
 
 ## Install
 
-These are standard Claude Code skills (a folder with a `SKILL.md`). Install however your setup expects — e.g. symlink or copy the `skills/*` directories into your agent's skills directory, or point a marketplace/config at this repo. Each skill folder is self-contained.
+This repo is a [Claude Code plugin marketplace](https://code.claude.com/docs/en/plugin-marketplaces). In Claude Code:
+
+```
+/plugin marketplace add brentibanez331/ren-atlas-skills
+/plugin install ren-atlas@ren-atlas-skills
+```
+
+All seven skills then load namespaced — e.g. `/ren-atlas:map-project` — and Claude can auto-invoke them by description. Pull later updates with `/plugin marketplace update`.
+
+No `version` is pinned, so each pushed commit is published as the new version. The `schemas/` and `references/` directories ship inside the plugin, so the skills' relative links resolve after install.
+
+> Prefer not to use the plugin system? Each `skills/<name>/` folder also works copied straight into your agent's skills directory; just keep `schemas/` and `references/` siblings of `skills/` so the `../../` links resolve.
 
 ## Schemas & shared references
 
