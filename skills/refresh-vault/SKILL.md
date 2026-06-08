@@ -39,10 +39,10 @@ Connections are cross-project, so a change can affect a neighbor's edges:
 
 - **Changed project P** → re-run `detect-connections` *for P* (re-scan P's outgoing edges) and re-derive incoming edges to P from P's neighbors.
 - **The neighbors of P** → their neighbor diagrams and "Talks to/Used by" lists may shift, so mark them for note/diagram regeneration too (1-hop).
-- **Structural change** (added/removed/renamed project) → re-run `map-project` to refresh the manifest (at least for the affected root), then treat the added/removed node's neighbors as changed. A removed project's note is marked stale, not silently deleted — leave it and append a `> [!warning] Project no longer found` line inside the generated region, unless the user asked to prune. If a project's **`kind` changed**, its note moves to the new folder per [vault-layout](../../references/vault-layout.md) (e.g. `lib` → `service` moves `projects/libs/<id>.md` → `projects/services/<id>.md`); update the `summaries.json` `note` path and any Canvas file-node accordingly.
+- **Structural change** (added/removed/renamed project) → re-run `map-project` to refresh the manifest (at least for the affected root), then treat the added/removed node's neighbors as changed. A removed project's note is marked stale, not silently deleted — leave it and append a `> [!warning] Project no longer found` line inside the generated region, unless the user asked to prune. If a project's **repo path (`root`) changed** (moved/renamed directory), its note moves to mirror the new path per [vault-layout](../../references/vault-layout.md) (`projects/<relPath>.md`); move the file, then update the `summaries.json` `note` path and any Canvas file-node accordingly. (`kind` changes only affect colors, not the folder.)
 - Unchanged projects far from the change are **left untouched**.
 
-Notes and flows follow [vault-layout](../../references/vault-layout.md): project notes at `projects/<group>/<id>.md`, flows at `flows/<slug>/<slug>.md`. Locate them there when updating.
+Notes and flows follow [vault-layout](../../references/vault-layout.md): project notes mirror the repo at `projects/<relPath>.md` (resolve `relPath` from the manifest `root` vs `roots[].path`), flows at `flows/<slug>/<slug>.md`. Locate them there when updating.
 
 Update `graph.json` and `manifest.json` in place for the affected slice only.
 

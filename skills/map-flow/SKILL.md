@@ -1,6 +1,6 @@
 ---
 name: map-flow
-description: Deep-maps how a specific capability or feature flows across files and projects — e.g. "how does Checkout KYC work between libs/ng and api/onboarding". Traces entry points → calls → cross-project hops → external SDKs/DBs at file/function granularity, and writes a deep-dive note with one or more Mermaid diagrams (sequenceDiagram, flowchart, and/or classDiagram — the model chooses what fits, and may emit several) plus file:line evidence. Writes to Architecture/flows/, links back to project notes via wikilinks, and never touches the system canvas. Records .atlas/flows/<slug>.json so refresh-vault can flag the flow stale when its traced files change. Use for feature/flow deep dives and "how does X work across A and B" questions — distinct from map-project (project topology). Can run standalone.
+description: Deep-maps how a specific capability or feature flows across files and projects — e.g. "how does checkout flow between the web app and the payments service". Traces entry points → calls → cross-project hops → external SDKs/DBs at file/function granularity, and writes a deep-dive note with one or more Mermaid diagrams (sequenceDiagram, flowchart, and/or classDiagram — the model chooses what fits, and may emit several) plus file:line evidence. Writes to Architecture/flows/, links back to project notes via wikilinks, and never touches the system canvas. Records .atlas/flows/<slug>.json so refresh-vault can flag the flow stale when its traced files change. Use for feature/flow deep dives and "how does X work across A and B" questions — distinct from map-project (project topology). Can run standalone.
 ---
 
 # map-flow
@@ -16,8 +16,8 @@ Trace one capability end-to-end across files and project boundaries, and persist
 
 ## Inputs
 
-- **A capability/feature** — e.g. "Checkout KYC", "magic-link login", "payout settlement".
-- **Spans** (optional) — the projects/dirs it crosses (`libs/ng/.../kyc`, `services/api/service/external/onboarding`). If omitted, discover them by grepping the capability keywords across the manifest's project roots.
+- **A capability/feature** — e.g. "checkout", "magic-link login", "payout settlement".
+- **Spans** (optional) — the projects/dirs it crosses (e.g. `apps/web/src/checkout`, `services/payments`). If omitted, discover them by grepping the capability keywords across the manifest's project roots.
 - **Vault** — resolve per [vault-resolution](../../references/vault-resolution.md) (explicit arg > `ATLAS_VAULT` > recorded in memory > ask).
 - **manifest.json / graph.json** (optional, under `.atlas/`) — if present, use them to map participants to project `id`s (for correct `[[wikilinks]]`) and to anchor known edges. `map-flow` works without them by inferring from paths.
 
@@ -25,7 +25,7 @@ Trace one capability end-to-end across files and project boundaries, and persist
 
 ### 1. Resolve the trace scope
 
-- Grep the capability's keywords (e.g. `checkout|checkout|kyc`) across the named spans — or across all project roots if spans weren't given — to find the participating files.
+- Grep the capability's keywords (e.g. `checkout|cart|payment`) across the named spans — or across all project roots if spans weren't given — to find the participating files.
 - Identify the **participants** (these become diagram lifelines / nodes): the UI/facade, the service layer, any SDK, the HTTP/gateway hop, the target project's handler/endpoint, and external systems (the third-party SDK, DB, queue). Map each participant to a project `id` via the manifest where possible, so you can wikilink it.
 
 ### 2. Trace the interaction
@@ -47,13 +47,13 @@ Pick the form(s) that explain *this* flow best. **You are not capped to one diag
 - **`flowchart`** — for branchy / multi-stage / state-machine flows (decisions, parallel paths, retries).
 - **`classDiagram`** — for the *data shapes* exchanged (DTOs, entities, the SDK result payload) when the contract is the point.
 
-> Heuristic: mostly calls → sequence; mostly branches/stages → flowchart; the question is about data shapes/contracts → class. A flow is often clearest as **two**: e.g. a `sequenceDiagram` for the KYC call flow **plus** a `classDiagram` for the Checkout result payload. Emit as many as genuinely add clarity, each under its own heading; drop any that would be redundant. Record which you chose (and why) in the note and the `.json`.
+> Heuristic: mostly calls → sequence; mostly branches/stages → flowchart; the question is about data shapes/contracts → class. A flow is often clearest as **two**: e.g. a `sequenceDiagram` for the call flow **plus** a `classDiagram` for the request/response payload. Emit as many as genuinely add clarity, each under its own heading; drop any that would be redundant. Record which you chose (and why) in the note and the `.json`.
 
 Apply the design-system colors and the mermaid-syntax pre-emit checklist to each.
 
 ### 4. Write the flow note — `Architecture/flows/<slug>/<slug>.md`
 
-`<slug>` = kebab-case of the capability (`checkout`). Each flow gets **its own folder** `flows/<slug>/` holding the note and all its diagram canvases (see [vault-layout](../../references/vault-layout.md)) — so a multi-diagram flow doesn't clutter `flows/`.
+`<slug>` = kebab-case of the capability (e.g. `checkout`). Each flow gets **its own folder** `flows/<slug>/` holding the note and all its diagram canvases (see [vault-layout](../../references/vault-layout.md)) — so a multi-diagram flow doesn't clutter `flows/`.
 
 Frontmatter:
 ```yaml
@@ -61,7 +61,7 @@ Frontmatter:
 type: flow
 capability: <capability>
 spans: [<project ids…>]
-relates: ["[[ui-lib]]", "[[service-api]]"]
+relates: ["[[<project-a>]]", "[[<project-b>]]"]
 generatedAt: <ISO timestamp>
 ---
 ```
@@ -69,7 +69,7 @@ generatedAt: <ISO timestamp>
 Body, inside `<!-- atlas:generated:start -->` / `<!-- atlas:generated:end -->` markers (same contract as the other skills):
 - `# <Capability> flow`
 - One-paragraph summary of what the flow does end-to-end.
-- **Participants** — wikilinks to project notes (`[[ui-lib]]`, `[[service-api]]`) + externals as plain text.
+- **Participants** — wikilinks to project notes (`[[<project-a>]]`, `[[<project-b>]]`) + externals as plain text.
 - The **diagram(s)**, each under its own heading in a ```mermaid block.
 - **Trace** — the ordered steps with `file:line` evidence.
 - Optional "Make editable" line: convert a diagram via the in-plugin **Mermaid to Excalidraw** (works for sequence/class too).
@@ -81,10 +81,10 @@ After the closing marker, leave a `## Notes` heading for the human. Also wikilin
 - **`Architecture/flows/_flows.md`** — a map-of-content (stays at `flows/` root, not inside a flow folder) listing every `[[<slug>]]` with its capability + spans. Maintain idempotently (inside generated markers).
 - **`<vault>/Architecture/.atlas/flows/<slug>.json`**:
   ```json
-  { "version": "1", "slug": "checkout", "capability": "Checkout KYC",
-    "spans": ["ui-lib", "service-api"], "participants": ["ui-lib","gateway","service-api","Checkout"],
+  { "version": "1", "slug": "checkout", "capability": "Checkout",
+    "spans": ["<project-a>", "<project-b>"], "participants": ["<project-a>","gateway","<project-b>","<external>"],
     "diagrams": ["sequenceDiagram", "classDiagram"],
-    "sourceFiles": ["/abs/kyc.facade.ts", "/abs/application/service.go", "..."],
+    "sourceFiles": ["/abs/path/checkout.facade.ts", "/abs/path/payment/service.go", "..."],
     "fingerprint": "<hash of sourceFiles' content/mtime>", "generatedAt": "<ISO>" }
   ```
   `refresh-vault` reads this: if any `sourceFile` changed, it flags the flow **stale** (it does not auto-rewrite — flows are curated).
