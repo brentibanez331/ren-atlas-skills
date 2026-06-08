@@ -101,12 +101,12 @@ The embedded Mermaid renders natively in Obsidian (read mode). For an *editable*
 
 Encode with the element schemas and **mandatory binding rules** in [`write-excalidraw/reference/excalidraw-format.md`](../write-excalidraw/reference/excalidraw-format.md) (reciprocal binding, bound labels, stable ids), color per [`design-system.md`](../../references/design-system.md), and run the collision check before writing. Write each into the flow's folder: `<vault>/Architecture/flows/<slug>/<slug>.<diagram>.excalidraw.md` (e.g. `flows/checkout/checkout.sequenceDiagram.excalidraw.md`).
 
-**Overwrite policy:** never overwrite or delete an existing flow canvas unless the user explicitly asks to regenerate *that* file (then warn manual edits are lost).
+**Overwrite policy:** running map-flow writes its note + canvases — create if absent, rebuild in place if present (note in the report if a rebuild replaced possible manual edits). Never delete a file. `refresh-vault` is the conservative path that flags a hand-edited flow canvas stale instead of rebuilding it.
 
 ## Guardrails
 
 - **Never** write or modify `System.excalidraw.md`, `System.canvas`, or `_index.md`'s `atlas:generated` region.
-- **Never overwrite an existing flow note unless the user explicitly asks** to regenerate/update that flow (same policy as canvases). The `.atlas/flows/<slug>.json` is machine state and may be rewritten. Never delete a note.
+- **Running map-flow writes/updates the flow note** — rewrite only between the `atlas:generated` markers (preserving the human `## Notes` section), exactly like the other generated notes. The `.atlas/flows/<slug>.json` is machine state and is rewritten freely. **Never delete a note or canvas.**
 - **Evidence is mandatory** — every step cites `file:line`, so the trace is auditable and `refresh-vault` can re-anchor it.
 - Keep each diagram within readable bounds; if a flow is huge, split it (e.g. a high-level sequence + a focused sub-flow) rather than one wall of arrows.
 

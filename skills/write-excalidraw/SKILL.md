@@ -1,6 +1,6 @@
 ---
 name: write-excalidraw
-description: Writes the architecture atlas into an Obsidian vault. Creates an Architecture/ folder, generates one Markdown note per project (frontmatter, wikilinks to neighbors, embedded Mermaid neighbor diagram), a system map-of-content index, and hand-authors editable .excalidraw.md canvases to strict positioning/color/size/spacing specs (reciprocal arrow bindings so arrows follow drags, bound labels, collision-checked layout). Never overwrites an existing canvas unless the user explicitly asks to regenerate it. Use after generate-mermaid-architecture, or when the user wants their architecture written into Obsidian / as Excalidraw canvases. Emits generated-region markers and a summaries.json for the rest of the pipeline.
+description: Writes the architecture atlas into an Obsidian vault. Creates an Architecture/ folder, generates one Markdown note per project (frontmatter, wikilinks to neighbors, embedded Mermaid neighbor diagram), a system map-of-content index, and hand-authors editable .excalidraw.md canvases to strict positioning/color/size/spacing specs (reciprocal arrow bindings so arrows follow drags, bound labels, collision-checked layout). Running it writes or rebuilds the canvases in place (it never deletes files); refresh-vault is the conservative maintainer that preserves manual edits. Use after generate-mermaid-architecture, or when the user wants their architecture written into Obsidian / as Excalidraw canvases. Emits generated-region markers and a summaries.json for the rest of the pipeline.
 ---
 
 # write-excalidraw
@@ -108,11 +108,14 @@ Procedure per canvas:
 3. **Run the collision check** (layout-algorithms § collision) — no node box, node label, or edge label may overlap. Fix spacing/labels and recompute before writing.
 4. **Stable ids** (`rect-<id>`, `arrow-<from>-<to>`, …) so `refresh-vault` can update in place.
 
-### Overwrite policy (important)
+### Overwrite policy
 
-- **Default: never overwrite or delete an existing canvas.** An `.excalidraw.md` already in the vault is the user's hand-edited drawing — leave it untouched and report it skipped. Never delete a file.
-- **Only when the user explicitly asks to regenerate / update / change a specific canvas**, overwrite *that file in place*, warning that manual edits to it are lost. Never regenerate proactively or touch a canvas you weren't asked to.
+**Running this skill is the request to write the canvases** — you do *not* need the user to also say "regenerate/overwrite". Create each canvas if absent; if it already exists, **rebuild it in place** from the current graph. Writing the canvas is the skill's whole job; don't refuse and make the user repeat themselves.
+
+- **Never delete a file.** Overwrite *in place* only — that single guard is what prevents the "my canvas vanished" failure; refusing to write was never needed for safety.
+- If an existing canvas may hold **manual edits** (the user rearranged it in Obsidian), go ahead and rebuild it, but **say so in your report** ("rebuilt System.excalidraw — hand-tuned positions replaced") so it's not a surprise.
+- The conservative, edit-preserving path is **`refresh-vault`**: when *it* or any automatic/background maintenance runs, it flags a hand-edited canvas as *stale* instead of rebuilding it. A user who wants to keep manual layout should refresh rather than re-run this skill.
 
 ## Done criteria & handoff
 
-Report the notes and `_index.md` written, the canvases hand-authored, and any existing canvas you **skipped** because it already existed (and that you can regenerate it if they ask). Confirm you ran the collision check. Mention that `load-session-context` can now load this vault and `refresh-vault` keeps the source `.mmd`/`graph.json` current.
+Report the notes and `_index.md` written, and the canvases written or rebuilt (flagging any rebuild that replaced possible manual edits). Confirm you ran the collision check. Mention that `load-session-context` can now load this vault and `refresh-vault` keeps the source `.mmd`/`graph.json` current.

@@ -80,6 +80,6 @@ Read the matching section, apply the design-system colors/sizes, then encode wit
 
 ## Overwrite policy
 
-Treat an existing `.excalidraw.md` as the user's drawing: **do not overwrite or delete it** unless the user explicitly asks to regenerate/update *that* canvas (then warn that manual edits to it are lost). Never delete a file.
+When a skill is **invoked to write a canvas**, writing it is the intent — create if absent, **rebuild in place** if present (and note in the report if a rebuild may have replaced manual edits). **Never delete a file** — overwrite in place only; that's the one hard guard. The conservative, edit-preserving path is `refresh-vault`, which flags a hand-edited canvas as stale rather than rebuilding it.
 
 > Prefer not to hand-author a particular diagram? The Obsidian-Excalidraw plugin can also convert a pasted Mermaid block (*Create new drawing → Mermaid to Excalidraw*) — a manual escape hatch, not the pack's method.
