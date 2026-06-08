@@ -42,13 +42,18 @@ Everything the pipeline produces is stored under a single `.atlas/` directory in
 <vault>/
 └── Architecture/
     ├── _index.md                 # map-of-content: system diagram + links to every project
-    ├── <project>.md              # one generated note per project
     ├── System.canvas             # native Obsidian Canvas: clickable, file-linked system map
     ├── System.excalidraw.md      # editable Excalidraw, hand-authored to strict specs
     ├── <domain>.excalidraw.md    # optional per-domain canvases (hand-authored)
+    ├── projects/                 # one note per project, grouped by kind
+    │   ├── apps/<id>.md          #   app | website | mobile
+    │   ├── services/<id>.md      #   service | function
+    │   └── libs/<id>.md          #   lib  (tools/ for tool)
     ├── flows/                    # map-flow deep dives (one capability each, linked back to the notes)
     │   ├── _flows.md             # index of all flows
-    │   └── <slug>.md             # e.g. checkout.md — sequence/flow/class Mermaid + evidence
+    │   └── <slug>/               # one folder per flow
+    │       ├── <slug>.md         # e.g. checkout.md — sequence/flow/class Mermaid + evidence
+    │       └── <slug>.<diagram>.excalidraw.md
     └── .atlas/                   # machine artifacts (the pipeline's working state)
         ├── manifest.json         # output of map-project
         ├── graph.json            # output of detect-connections
@@ -100,6 +105,7 @@ Cross-skill design guidance lives in [`references/`](references) (referenced by 
 - [`layout-algorithms.md`](references/layout-algorithms.md) — deterministic layouts; layered-by-dependency-depth is the architecture default
 - [`mermaid-syntax.md`](references/mermaid-syntax.md) — error-prevention rules so generated Mermaid always renders
 - [`vault-resolution.md`](references/vault-resolution.md) — how every skill resolves the vault path (explicit arg > `ATLAS_VAULT` > recorded in memory > ask); `map-project` records it on first run, the rest recall it
+- [`vault-layout.md`](references/vault-layout.md) — canonical vault structure: project notes grouped by kind under `projects/`, one folder per flow under `flows/`, and which artifacts store explicit paths vs wikilinks
 
 Excalidraw canvases are **hand-authored** to these specs (no converter, no dependencies): `layout-algorithms.md` covers exact positioning per diagram type (graph/flowchart, sequence, class, mindmap), and `write-excalidraw/reference/excalidraw-format.md` covers the element schemas + mandatory binding rules.
 

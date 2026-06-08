@@ -51,9 +51,9 @@ Pick the form(s) that explain *this* flow best. **You are not capped to one diag
 
 Apply the design-system colors and the mermaid-syntax pre-emit checklist to each.
 
-### 4. Write the flow note — `Architecture/flows/<slug>.md`
+### 4. Write the flow note — `Architecture/flows/<slug>/<slug>.md`
 
-`<slug>` = kebab-case of the capability (`checkout`).
+`<slug>` = kebab-case of the capability (`checkout`). Each flow gets **its own folder** `flows/<slug>/` holding the note and all its diagram canvases (see [vault-layout](../../references/vault-layout.md)) — so a multi-diagram flow doesn't clutter `flows/`.
 
 Frontmatter:
 ```yaml
@@ -78,7 +78,7 @@ After the closing marker, leave a `## Notes` heading for the human. Also wikilin
 
 ### 5. Index + persistence
 
-- **`Architecture/flows/_flows.md`** — a map-of-content listing every `[[<slug>]]` with its capability + spans. Maintain idempotently (inside generated markers).
+- **`Architecture/flows/_flows.md`** — a map-of-content (stays at `flows/` root, not inside a flow folder) listing every `[[<slug>]]` with its capability + spans. Maintain idempotently (inside generated markers).
 - **`<vault>/Architecture/.atlas/flows/<slug>.json`**:
   ```json
   { "version": "1", "slug": "checkout", "capability": "Checkout KYC",
@@ -99,7 +99,7 @@ The embedded Mermaid renders natively in Obsidian (read mode). For an *editable*
 - **classDiagram** → §6 (class) — compartment boxes, semantic relation arrowheads.
 - **mindmap** → §7 (mindmap) — central root + radial branches.
 
-Encode with the element schemas and **mandatory binding rules** in [`write-excalidraw/reference/excalidraw-format.md`](../write-excalidraw/reference/excalidraw-format.md) (reciprocal binding, bound labels, stable ids), color per [`design-system.md`](../../references/design-system.md), and run the collision check before writing. Write each as `<vault>/Architecture/flows/<slug>.excalidraw.md` (or `<slug>.<diagram>.excalidraw.md` if a flow has several).
+Encode with the element schemas and **mandatory binding rules** in [`write-excalidraw/reference/excalidraw-format.md`](../write-excalidraw/reference/excalidraw-format.md) (reciprocal binding, bound labels, stable ids), color per [`design-system.md`](../../references/design-system.md), and run the collision check before writing. Write each into the flow's folder: `<vault>/Architecture/flows/<slug>/<slug>.<diagram>.excalidraw.md` (e.g. `flows/checkout/checkout.sequenceDiagram.excalidraw.md`).
 
 **Overwrite policy:** never overwrite or delete an existing flow canvas unless the user explicitly asks to regenerate *that* file (then warn manual edits are lost).
 

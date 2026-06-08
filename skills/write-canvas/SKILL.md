@@ -38,7 +38,7 @@ Optionally, per-project neighbor canvases (`<id>.neighbors.canvas`) using the ra
 
 For each graph node:
 
-- **Project, note exists** → a **`file` node** pointing at `Architecture/<id>.md` (vault-relative). Size 260×80. This is the win — the node is a live link.
+- **Project, note exists** → a **`file` node** pointing at the note's grouped, vault-relative path per [vault-layout](../../references/vault-layout.md): `Architecture/projects/<group>/<id>.md` (e.g. `Architecture/projects/apps/app-web.md`). Size 260×80. This is the win — the node is a live link. (Canvas file-nodes need the **explicit path**, so use the grouped folder — not a bare `Architecture/<id>.md`.)
 - **Project, no note yet** → a **`text` node** with the project name (Markdown `**name**`), 200×70. Warn that running `write-excalidraw` first upgrades these to clickable file-nodes.
 - **External** → a muted **`text` node** (name + kind), using the external color from the design system.
 

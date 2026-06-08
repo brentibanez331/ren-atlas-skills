@@ -20,15 +20,20 @@ Persist the atlas into an Obsidian vault as linked notes with embedded Mermaid, 
 
 ## What to write
 
+Follow the canonical [vault-layout](../../references/vault-layout.md) — project notes are **grouped by kind** under `projects/`, not dumped at the root.
+
 ```
 <vault>/Architecture/
-├── _index.md                    # MOC: system Mermaid + links to every project + legend
-├── <project-id>.md              # one per project
-├── System.excalidraw.md         # hand-authored system canvas — skipped if it already exists
-├── <domain>.excalidraw.md       # likewise, per domain tag, if wanted
+├── _index.md                       # MOC: system Mermaid + links to every project + legend
+├── System.excalidraw.md            # hand-authored system canvas — skipped if it already exists
+├── <domain>.excalidraw.md          # likewise, per domain tag, if wanted
+├── projects/                       # one note per project, grouped by kind (see vault-layout)
+│   ├── apps/<id>.md                #   app | website | mobile
+│   ├── services/<id>.md            #   service | function
+│   └── libs/<id>.md                #   lib   (tools/ for tool; projects/ root for unknown)
 └── .atlas/
     ├── ... (manifest, graph, diagrams)
-    └── summaries.json           # compact context cache for load-session-context
+    └── summaries.json              # compact context cache for load-session-context
 ```
 
 ### Generated-region markers (critical)
@@ -43,7 +48,9 @@ Every note this skill writes wraps its machine-generated body between:
 
 `refresh-vault` only rewrites *between* these markers. Put anything the user might hand-edit (a free "Notes" heading) **outside** them. Never emit a note without these markers — they are the contract that keeps the vault editable.
 
-### Per-project note — `<project-id>.md`
+### Per-project note — `projects/<group>/<id>.md`
+
+Write each project note into its kind's folder per [vault-layout](../../references/vault-layout.md) (`app`/`website`/`mobile` → `projects/apps/`, `service`/`function` → `projects/services/`, `lib` → `projects/libs/`, `tool` → `projects/tools/`, `unknown` → `projects/`). The filename stays `<id>.md`. Cross-note references are **wikilinks** (`[[<id>]]`), which resolve by name regardless of folder.
 
 Frontmatter:
 ```yaml
@@ -85,7 +92,7 @@ Write a compact array consumed by `load-session-context`, one entry per project:
   "projects": [
     { "id": "web-frontend", "name": "web-frontend", "root": "/abs/path",
       "kind": "app", "talksTo": [{"id":"api-gateway","protocol":"http","sync":"sync"}],
-      "usedBy": [], "owns": "auth UI, dashboard", "note": "<vault-rel path to note>" }
+      "usedBy": [], "owns": "auth UI, dashboard", "note": "Architecture/projects/apps/web-frontend.md" }
   ] }
 ```
 Keep `owns` short — it's a token-thrifty summary, not the whole note.
